@@ -1,0 +1,236 @@
+{
+  "name": "Sales Bot - Simple (No DB)",
+  "nodes": [
+    {
+      "id": "node-tg-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300],
+      "webhookId": "sales-bot-webhook-1",
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-extract",
+      "name": "Extract & Get State",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "parameters": {
+        "jsCode": "const msg = $json.message;\nif (!msg || !msg.text) return [];\n\nconst chatId = String(msg.chat.id);\nconst text = msg.text.trim();\nconst firstName = (msg.from?.first_name || 'دوست').replace(/'/g, '');\n\n// خواندن state از workflow static data\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.users) staticData.users = {};\n\nif (!staticData.users[chatId]) {\n  staticData.users[chatId] = {\n    stage: 'greeting',\n    firstName,\n    painPoints: '',\n    objCount: 0,\n    hasPurchased: false,\n    createdAt: new Date().toISOString(),\n    lastMessageAt: new Date().toISOString()\n  };\n}\n\nconst user = staticData.users[chatId];\nuser.lastMessageAt = new Date().toISOString();\nuser.firstName = firstName;\n\nreturn [{ json: {\n  chatId,\n  text,\n  firstName,\n  sessionId: chatId,\n  stage: user.stage,\n  painPoints: user.painPoints,\n  objCount: user.objCount,\n  hasPurchased: user.hasPurchased\n}}];"
+      }
+    },
+    {
+      "id": "node-check-purchased",
+      "name": "Already Purchased?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [500, 300],
+      "parameters": {
+        "conditions": {
+          "conditions": [{ "id": "c1", "leftValue": "={{ $json.hasPurchased }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equal" } }],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "node-purchased-reply",
+      "name": "Already Purchased Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [750, 150],
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "سلام {{ $json.firstName }} عزیز 💙\nخوشحالم که قبلاً ثبت‌نام کردی! برای دسترسی به دوره یا سوال اینجام.",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-build-prompt",
+      "name": "Build System Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [750, 450],
+      "parameters": {
+        "jsCode": "const stage = $json.stage;\nconst firstName = $json.firstName;\nconst painPoints = $json.painPoints || '';\nconst objCount = $json.objCount || 0;\n\nconst IDENTITY = `تو «سارا» هستی، یک مشاور زناشویی باتجربه و صمیمی.\nهرگز مثل ربات یا کاتالوگ حرف نزن. مثل یک دوست قابل اعتماد باش.\nهمیشه به فارسی پاسخ بده. پیام‌هایت کوتاه باشند (حداکثر 3 جمله).\nهیچوقت نگو «به عنوان هوش مصنوعی» یا «به عنوان ربات».\nهر پیام رو با یک سوال تموم کن.`;\n\nconst PRODUCT = `اطلاعات دوره:\nنام: «زندگی مشترک طلایی»\nمحتوا: ۴۸ ویدیو + ۱۲ کارگاه عملی + پشتیبانی ۳۰ روزه\nضمانت برگشت وجه ۱۴ روزه`;\n\nconst STAGES = {\n  greeting: `مرحله: خوش‌آمدگویی\\nبا اسم ${firstName} سلام کن، یه سوال گرم بپرس\\nهنوز از دوره یا قیمت حرف نزن`,\n  discovery: `مرحله: کشف مشکل\\nسوالات همدلانه بپرس، قضاوت نکن\\nدنبال: رابطه سرد، اختلاف، صمیمیت کم`,\n  solution: `مرحله: معرفی راه‌حل\\nمشکلات: ${painPoints}\\nاول مشکل رو بازگو کن، بعد دوره رو معرفی کن`,\n  objection: `مرحله: رسیدگی به اعتراض (تعداد: ${objCount})\\nگران: اقساط پیشنهاد بده\\nباید فکر کنم: «طبیعیه...»\\nاگر ${objCount} >= 2 تخفیف ۱۵٪`,\n  closing: `مرحله: بستن فروش\\nلینک پرداخت می‌فرستم، فوریت ایجاد کن`\n};\n\nconst systemPrompt = IDENTITY + '\\n\\n' + PRODUCT + '\\n\\n' + (STAGES[stage] || STAGES.greeting);\n\nreturn [{ json: { ...$json, systemPrompt } }];"
+      }
+    },
+    {
+      "id": "node-agent",
+      "name": "Sales AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [1000, 450],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "systemMessage": "={{ $json.systemPrompt }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "node-anthropic",
+      "name": "Claude Haiku",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [900, 650],
+      "parameters": {
+        "model": { "value": "claude-3-5-haiku-20241022", "__rl": true, "mode": "list" },
+        "options": { "temperature": 0.75, "maxTokensToSample": 512 }
+      },
+      "credentials": {
+        "anthropicApi": { "id": "ANTHROPIC_CREDENTIAL_ID", "name": "Anthropic" }
+      }
+    },
+    {
+      "id": "node-memory",
+      "name": "Window Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [1100, 650],
+      "parameters": {
+        "sessionKey": "={{ $('Extract & Get State').item.json.sessionId }}",
+        "sessionIdType": "customKey",
+        "contextWindowLength": 10
+      }
+    },
+    {
+      "id": "node-update-state",
+      "name": "Update State",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 450],
+      "parameters": {
+        "jsCode": "const aiResponse = $json.output;\nconst chatId = $('Extract & Get State').item.json.chatId;\nconst stage = $('Extract & Get State').item.json.stage;\nconst userText = $('Extract & Get State').item.json.text.toLowerCase();\nlet objCount = $('Extract & Get State').item.json.objCount;\nlet painPoints = $('Extract & Get State').item.json.painPoints;\n\nlet nextStage = stage;\nconst has = (words) => words.some(w => userText.includes(w));\n\nconst discoveryWords = ['مشکل','همسر','رابطه','اختلاف','خسته','نگران','دعوا','سرد'];\nconst solutionWords = ['چطور','راه','کمک می','بیشتر','جالب','چی کار'];\nconst closingWords = ['چقدر','قیمت','هزینه','ثبت','بخرم','می‌خوام'];\nconst purchasedWords = ['پرداخت کردم','خریدم','ثبت نام کردم'];\nconst objectionWords = ['گرون','نمیتونم','بعداً','فکر کنم','وقت ندارم'];\n\nif (stage === 'greeting' && has(discoveryWords)) nextStage = 'discovery';\nelse if (stage === 'discovery' && has(solutionWords)) nextStage = 'solution';\nelse if (stage === 'solution' && has(closingWords)) nextStage = 'objection';\nelse if (stage === 'objection' && has(closingWords)) nextStage = 'closing';\nelse if (has(purchasedWords)) nextStage = 'purchased';\n\nif (has(objectionWords)) objCount += 1;\n\nif (stage === 'discovery') {\n  const pains = [];\n  if (userText.includes('سرد')) pains.push('رابطه سرد');\n  if (userText.includes('دعوا') || userText.includes('اختلاف')) pains.push('اختلاف');\n  if (userText.includes('صمیمیت')) pains.push('کمبود صمیمیت');\n  if (pains.length) painPoints = pains.join(', ');\n}\n\n// ذخیره در staticData\nconst staticData = $getWorkflowStaticData('global');\nstaticData.users[chatId].stage = nextStage;\nstaticData.users[chatId].painPoints = painPoints;\nstaticData.users[chatId].objCount = objCount;\nif (nextStage === 'purchased') {\n  staticData.users[chatId].hasPurchased = true;\n}\n\nreturn [{ json: {\n  chatId,\n  aiResponse,\n  nextStage,\n  isPurchased: nextStage === 'purchased',\n  isClosing: nextStage === 'closing'\n}}];"
+      }
+    },
+    {
+      "id": "node-check-purchase",
+      "name": "Just Purchased?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1500, 450],
+      "parameters": {
+        "conditions": {
+          "conditions": [{ "id": "c2", "leftValue": "={{ $json.isPurchased }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equal" } }],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "node-send-course",
+      "name": "Send Course Link",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1750, 300],
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "🎉 ثبت‌نام تایید شد!\n\nلینک دوره:\nREPLACE_WITH_COURSE_LINK\n\nسوالی داشتی اینجام 💙",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-notify-admin",
+      "name": "Notify Admin",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2000, 300],
+      "parameters": {
+        "chatId": "REPLACE_WITH_ADMIN_CHAT_ID",
+        "text": "💰 فروش جدید!\nChat ID: {{ $json.chatId }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-check-closing",
+      "name": "Is Closing?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1750, 600],
+      "parameters": {
+        "conditions": {
+          "conditions": [{ "id": "c3", "leftValue": "={{ $json.isClosing }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equal" } }],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "node-send-payment",
+      "name": "Send With Payment",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2000, 500],
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.aiResponse }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "reply_markup": "{\"inline_keyboard\":[[{\"text\":\"ثبت‌نام و پرداخت 💳\",\"url\":\"REPLACE_WITH_PAYMENT_LINK\"}]]}"
+        }
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-send-plain",
+      "name": "Send Plain Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2000, 700],
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.aiResponse }}",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": { "main": [[{ "node": "Extract & Get State", "type": "main", "index": 0 }]] },
+    "Extract & Get State": { "main": [[{ "node": "Already Purchased?", "type": "main", "index": 0 }]] },
+    "Already Purchased?": {
+      "main": [
+        [{ "node": "Already Purchased Reply", "type": "main", "index": 0 }],
+        [{ "node": "Build System Prompt", "type": "main", "index": 0 }]
+      ]
+    },
+    "Build System Prompt": { "main": [[{ "node": "Sales AI Agent", "type": "main", "index": 0 }]] },
+    "Claude Haiku": { "ai_languageModel": [[{ "node": "Sales AI Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Window Memory": { "ai_memory": [[{ "node": "Sales AI Agent", "type": "ai_memory", "index": 0 }]] },
+    "Sales AI Agent": { "main": [[{ "node": "Update State", "type": "main", "index": 0 }]] },
+    "Update State": { "main": [[{ "node": "Just Purchased?", "type": "main", "index": 0 }]] },
+    "Just Purchased?": {
+      "main": [
+        [{ "node": "Send Course Link", "type": "main", "index": 0 }],
+        [{ "node": "Is Closing?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send Course Link": { "main": [[{ "node": "Notify Admin", "type": "main", "index": 0 }]] },
+    "Is Closing?": {
+      "main": [
+        [{ "node": "Send With Payment", "type": "main", "index": 0 }],
+        [{ "node": "Send Plain Reply", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}
