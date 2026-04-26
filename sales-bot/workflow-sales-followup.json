@@ -1,0 +1,121 @@
+{
+  "name": "Sales Bot - Follow-up Scheduler",
+  "nodes": [
+    {
+      "id": "node-schedule",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300],
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 15 }] }
+      }
+    },
+    {
+      "id": "node-find-users",
+      "name": "Find Due Users",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [250, 300],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT telegram_id, first_name, stage, followup_step, pain_points, last_message_at, followup_sent_at FROM sales_users WHERE has_purchased = FALSE AND stage NOT IN ('purchased','dead') AND ((followup_step = 0 AND last_message_at < NOW() - INTERVAL '30 minutes' AND last_message_at > NOW() - INTERVAL '45 minutes') OR (followup_step = 1 AND followup_sent_at < NOW() - INTERVAL '3 hours' AND followup_sent_at > NOW() - INTERVAL '3 hours 15 minutes') OR (followup_step = 2 AND followup_sent_at < NOW() - INTERVAL '24 hours' AND followup_sent_at > NOW() - INTERVAL '24 hours 15 minutes') OR (followup_step = 3 AND followup_sent_at < NOW() - INTERVAL '3 days' AND followup_sent_at > NOW() - INTERVAL '3 days 15 minutes'))",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "POSTGRES_CREDENTIAL_ID", "name": "PostgreSQL" }
+      }
+    },
+    {
+      "id": "node-any-users",
+      "name": "Any Users?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [500, 300],
+      "parameters": {
+        "conditions": {
+          "conditions": [{ "id": "c1", "leftValue": "={{ $items().length }}", "rightValue": 0, "operator": { "type": "number", "operation": "gt" } }],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "node-batches",
+      "name": "Process In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [750, 200],
+      "parameters": { "batchSize": 5, "options": {} }
+    },
+    {
+      "id": "node-build-msg",
+      "name": "Build Follow-up Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 200],
+      "parameters": {
+        "jsCode": "const step = $json.followup_step;\nconst name = $json.first_name || 'دوست عزیز';\n\nconst messages = {\n  0: {\n    text: `${name} جان، یه چیز جالب یادم افتاد که فکر می‌کنم برات مفید باشه...\\n\\nآیا می‌دونستی ۷۰٪ مشکلات زناشویی با یاد گرفتن چند تکنیک ساده قابل حله؟\\n\\nمی‌خوای بیشتر بدونی؟ 🌸`,\n    next_step: 1\n  },\n  1: {\n    text: `${name}، اجازه بده یه تجربه واقعی باهات به اشتراک بذارم:\\n\\n«من و همسرم ۵ سال بود داشتیم از هم دور می‌شدیم. فکر می‌کردیم همه زوج‌ها اینطورن. بعد از این دوره انگار دوباره عاشق شدیم.»\\n— مریم، ۳۴ ساله\\n\\nمی‌خوای بدونی چطور؟`,\n    next_step: 2\n  },\n  2: {\n    text: `${name}، فقط می‌خواستم بدونی که این هفته یه فرصت خاص داریم:\\n\\n🎁 تخفیف ۲۰٪ برای ثبت‌نام تا پایان هفته\\n📚 + کتاب صوتی «زبان عشق» رایگان\\n\\nاین پیشنهاد محدوده. می‌خوای جزئیات بیشتر بدونی؟`,\n    next_step: 3\n  },\n  3: {\n    text: `${name}، آخرین بار مزاحمت می‌شم 🙏\\n\\nمی‌دونم زندگی شلوغه. فقط بدون که هر وقت آماده شدی اینجام.\\n\\nبهترین سرمایه‌گذاری، سرمایه‌گذاری روی رابطه با عزیزترین آدم زندگیته 💙\\n\\nوقتی آماده شدی فقط بنویس: می‌خوام شروع کنم`,\n    next_step: 4\n  }\n};\n\nconst msg = messages[step] || messages[0];\nreturn [{ json: {\n  telegram_id: $json.telegram_id,\n  message: msg.text,\n  next_step: msg.next_step\n}}];"
+      }
+    },
+    {
+      "id": "node-send-followup",
+      "name": "Send Follow-up",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1250, 200],
+      "parameters": {
+        "chatId": "={{ $json.telegram_id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-update-followup",
+      "name": "Update Follow-up Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1500, 200],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE sales_users SET followup_step = {{ $json.next_step }}, followup_sent_at = NOW(), stage = CASE WHEN {{ $json.next_step }} >= 4 THEN 'dead' ELSE stage END WHERE telegram_id = {{ $json.telegram_id }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "POSTGRES_CREDENTIAL_ID", "name": "PostgreSQL" }
+      }
+    },
+    {
+      "id": "node-wait",
+      "name": "Rate Limit Pause",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1750, 200],
+      "parameters": {
+        "unit": "seconds",
+        "amount": 3
+      },
+      "webhookId": "REPLACE_WITH_UNIQUE_ID_2"
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": { "main": [[{ "node": "Find Due Users", "type": "main", "index": 0 }]] },
+    "Find Due Users": { "main": [[{ "node": "Any Users?", "type": "main", "index": 0 }]] },
+    "Any Users?": {
+      "main": [
+        [{ "node": "Process In Batches", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Process In Batches": { "main": [[{ "node": "Build Follow-up Message", "type": "main", "index": 0 }]] },
+    "Build Follow-up Message": { "main": [[{ "node": "Send Follow-up", "type": "main", "index": 0 }]] },
+    "Send Follow-up": { "main": [[{ "node": "Update Follow-up Status", "type": "main", "index": 0 }]] },
+    "Update Follow-up Status": { "main": [[{ "node": "Rate Limit Pause", "type": "main", "index": 0 }]] },
+    "Rate Limit Pause": { "main": [[{ "node": "Process In Batches", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}

@@ -1,0 +1,287 @@
+{
+  "name": "Sales Bot - Main Handler",
+  "nodes": [
+    {
+      "id": "node-tg-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300],
+      "webhookId": "REPLACE_WITH_UNIQUE_ID",
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-extract",
+      "name": "Extract Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "parameters": {
+        "jsCode": "const msg = $json.message;\nif (!msg || !msg.text) return [];\nreturn [{ json: {\n  chatId: String(msg.chat.id),\n  text: msg.text.trim(),\n  firstName: (msg.from?.first_name || 'دوست').replace(/'/g, ''),\n  username: msg.from?.username || null,\n  sessionId: String(msg.chat.id)\n}}];"
+      }
+    },
+    {
+      "id": "node-upsert",
+      "name": "Get Or Create User",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [500, 300],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sales_users (telegram_id, telegram_username, first_name, last_message_at) VALUES ({{ $json.chatId }}, {{ $json.username ? '\\'' + $json.username + '\\'' : 'NULL' }}, '{{ $json.firstName }}', NOW()) ON CONFLICT (telegram_id) DO UPDATE SET last_message_at = NOW() RETURNING *",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "POSTGRES_CREDENTIAL_ID", "name": "PostgreSQL" }
+      }
+    },
+    {
+      "id": "node-check-purchased",
+      "name": "Already Purchased?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [750, 300],
+      "parameters": {
+        "conditions": {
+          "conditions": [{ "id": "c1", "leftValue": "={{ $json.has_purchased }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equal" } }],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "node-purchased-reply",
+      "name": "Already Purchased Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1000, 150],
+      "parameters": {
+        "chatId": "={{ $('Extract Input').item.json.chatId }}",
+        "text": "سلام {{ $('Extract Input').item.json.firstName }} عزیز 💙\nخوشحالم که قبلاً ثبت‌نام کردی! برای دسترسی به دوره یا هر سوالی اینجام.",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-build-prompt",
+      "name": "Build System Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 450],
+      "parameters": {
+        "jsCode": "const user = $('Get Or Create User').item.json;\nconst stage = user.stage || 'greeting';\nconst firstName = $('Extract Input').item.json.firstName;\nconst painPoints = user.pain_points || '';\nconst objCount = user.objection_count || 0;\n\nconst IDENTITY = `تو «سارا» هستی، یک مشاور زناشویی باتجربه و صمیمی.\nهرگز مثل ربات یا کاتالوگ حرف نزن. مثل یک دوست قابل اعتماد باش.\nهمیشه به فارسی پاسخ بده. پیام‌هایت کوتاه باشند (حداکثر 3 جمله).\nهیچوقت نگو «به عنوان هوش مصنوعی» یا «به عنوان ربات».\nهر پیام رو با یک سوال تموم کن.`;\n\nconst PRODUCT = `اطلاعات دوره:\nنام: «زندگی مشترک طلایی»\nمحتوا: ۴۸ ویدیو + ۱۲ کارگاه عملی + پشتیبانی ۳۰ روزه\nضمانت برگشت وجه ۱۴ روزه\n۸۷٪ شرکت‌کنندگان بهبود رابطه گزارش دادند`;\n\nconst STAGES = {\n  greeting: `مرحله: خوش‌آمدگویی\\nهدف: ارتباط بساز و بفهم چرا اومدن\\nبا اسم ${firstName} سلام کن، یه سوال گرم بپرس\\nهنوز از دوره یا قیمت حرف نزن`,\n  discovery: `مرحله: کشف مشکل\\nهدف: بفهم دقیقاً چه دردی دارن\\nسوالات همدلانه بپرس، قضاوت نکن\\nدنبال: رابطه سرد، اختلاف، صمیمیت کم، روزمرگی`,\n  solution: `مرحله: معرفی راه‌حل\\nمشکلات کشف‌شده: ${painPoints}\\nاول مشکل رو بازگو کن (تا بدونن شنیده شدن)\\nبعد دوره رو به عنوان راه‌حل معرفی کن، نه کاتالوگ`,\n  objection: `مرحله: رسیدگی به اعتراض (تعداد قبلی: ${objCount})\\nگران است: پرداخت اقساطی رو پیشنهاد بده\\nباید فکر کنم: «طبیعیه، اکثر افراد اول همینو می‌گن...»\\nوقت ندارم: «۱۵ دقیقه در روز کافیه»\\nاگر ${objCount} >= 2 تخفیف ۱۵٪ بده`,\n  closing: `مرحله: بستن فروش\\nلینک پرداخت رو بفرست\\nبگو این هفته ظرفیت محدوده\\nبعد از لینک بپرس: «دیدی؟ سوالی داری؟»`\n};\n\nconst systemPrompt = IDENTITY + '\\n\\n' + PRODUCT + '\\n\\n' + (STAGES[stage] || STAGES.greeting);\n\nreturn [{ json: {\n  chatId: $('Extract Input').item.json.chatId,\n  text: $('Extract Input').item.json.text,\n  sessionId: $('Extract Input').item.json.sessionId,\n  firstName,\n  systemPrompt,\n  currentStage: stage,\n  painPoints,\n  objCount\n}}];"
+      }
+    },
+    {
+      "id": "node-agent",
+      "name": "Sales AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [1250, 450],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "systemMessage": "={{ $json.systemPrompt }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "node-anthropic",
+      "name": "Claude Haiku",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [1100, 650],
+      "parameters": {
+        "model": { "value": "claude-3-5-haiku-20241022", "__rl": true, "mode": "list" },
+        "options": { "temperature": 0.75, "maxTokensToSample": 512 }
+      },
+      "credentials": {
+        "anthropicApi": { "id": "ANTHROPIC_CREDENTIAL_ID", "name": "Anthropic" }
+      }
+    },
+    {
+      "id": "node-memory",
+      "name": "Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [1400, 650],
+      "parameters": {
+        "sessionKey": "={{ $('Build System Prompt').item.json.sessionId }}",
+        "tableName": "n8n_chat_histories",
+        "contextWindowLength": 10
+      },
+      "credentials": {
+        "postgres": { "id": "POSTGRES_CREDENTIAL_ID", "name": "PostgreSQL" }
+      }
+    },
+    {
+      "id": "node-detect-stage",
+      "name": "Detect Stage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1500, 450],
+      "parameters": {
+        "jsCode": "const aiResponse = $json.output;\nconst stage = $('Build System Prompt').item.json.currentStage;\nconst userText = $('Extract Input').item.json.text.toLowerCase();\nconst chatId = $('Extract Input').item.json.chatId;\nconst objCount = $('Build System Prompt').item.json.objCount;\n\nlet nextStage = stage;\nlet newObjCount = objCount;\nlet painPoints = $('Build System Prompt').item.json.painPoints;\n\nconst has = (words) => words.some(w => userText.includes(w));\n\nconst discoveryWords = ['مشکل','همسر','رابطه','اختلاف','خسته','نگران','دعوا','سرد','کمک','زندگی'];\nconst solutionWords = ['چطور','راه','کمک می','بیشتر','جالب','چی کار','ممنون'];\nconst closingWords = ['چقدر','قیمت','هزینه','ثبت','بخرم','می‌خوام','خرید'];\nconst purchasedWords = ['پرداخت کردم','خریدم','ثبت نام کردم','انجام دادم'];\nconst objectionWords = ['گرون','نمیتونم','بعداً','فکر کنم','همسرم','وقت ندارم','مطمئن نیستم'];\n\nif (stage === 'greeting' && has(discoveryWords)) nextStage = 'discovery';\nelse if (stage === 'discovery' && has(solutionWords)) nextStage = 'solution';\nelse if (stage === 'solution' && has(closingWords)) nextStage = 'objection';\nelse if (stage === 'objection' && has(closingWords)) nextStage = 'closing';\nelse if (has(purchasedWords)) nextStage = 'purchased';\n\nif (has(objectionWords)) newObjCount += 1;\n\nif (stage === 'discovery' && has(['سرد','دعوا','اختلاف','صمیمیت','نزدیکی','جدایی'])) {\n  const pains = [];\n  if (userText.includes('سرد')) pains.push('رابطه سرد');\n  if (userText.includes('دعوا') || userText.includes('اختلاف')) pains.push('اختلاف نظر');\n  if (userText.includes('صمیمیت') || userText.includes('نزدیکی')) pains.push('کمبود صمیمیت');\n  if (pains.length) painPoints = JSON.stringify(pains);\n}\n\nreturn [{ json: {\n  chatId,\n  aiResponse,\n  nextStage,\n  stageChanged: nextStage !== stage,\n  isPurchased: nextStage === 'purchased',\n  isClosing: nextStage === 'closing',\n  painPoints,\n  newObjCount\n}}];"
+      }
+    },
+    {
+      "id": "node-update-stage",
+      "name": "Update User Stage",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1750, 450],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE sales_users SET stage = '{{ $json.nextStage }}', last_message_at = NOW(), followup_step = 0, followup_sent_at = NULL, pain_points = COALESCE(NULLIF('{{ $json.painPoints }}',''), pain_points), objection_count = {{ $json.newObjCount }} WHERE telegram_id = {{ $json.chatId }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "POSTGRES_CREDENTIAL_ID", "name": "PostgreSQL" }
+      }
+    },
+    {
+      "id": "node-check-new-purchase",
+      "name": "Is Purchased Now?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 450],
+      "parameters": {
+        "conditions": {
+          "conditions": [{ "id": "c2", "leftValue": "={{ $json.isPurchased }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equal" } }],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "node-mark-purchased",
+      "name": "Mark As Purchased",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2250, 200],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE sales_users SET has_purchased = TRUE, stage = 'purchased' WHERE telegram_id = {{ $json.chatId }}",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "POSTGRES_CREDENTIAL_ID", "name": "PostgreSQL" }
+      }
+    },
+    {
+      "id": "node-send-course",
+      "name": "Send Course Link",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2500, 150],
+      "parameters": {
+        "chatId": "={{ $('Detect Stage').item.json.chatId }}",
+        "text": "🎉 ثبت‌نام‌ات تایید شد!\n\nلینک دسترسی به دوره:\nREPLACE_WITH_COURSE_LINK\n\nهر سوالی داشتی اینجام 💙",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-notify-admin",
+      "name": "Notify Admin",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2500, 300],
+      "parameters": {
+        "chatId": "REPLACE_WITH_ADMIN_CHAT_ID",
+        "text": "💰 فروش جدید!\n\nکاربر: {{ $('Extract Input').item.json.firstName }}\nChat ID: {{ $('Detect Stage').item.json.chatId }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-check-closing",
+      "name": "Is Closing Stage?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2250, 600],
+      "parameters": {
+        "conditions": {
+          "conditions": [{ "id": "c3", "leftValue": "={{ $json.isClosing }}", "rightValue": true, "operator": { "type": "boolean", "operation": "equal" } }],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "node-send-payment",
+      "name": "Send With Payment Button",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2500, 500],
+      "parameters": {
+        "chatId": "={{ $('Detect Stage').item.json.chatId }}",
+        "text": "={{ $('Detect Stage').item.json.aiResponse }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "reply_markup": "{\"inline_keyboard\":[[{\"text\":\"ثبت‌نام و پرداخت 💳\",\"url\":\"REPLACE_WITH_PAYMENT_LINK\"},{\"text\":\"سوال دارم\",\"callback_data\":\"has_question\"}]]}"
+        }
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    },
+    {
+      "id": "node-send-plain",
+      "name": "Send Plain Response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2500, 700],
+      "parameters": {
+        "chatId": "={{ $('Detect Stage').item.json.chatId }}",
+        "text": "={{ $('Detect Stage').item.json.aiResponse }}",
+        "additionalFields": { "parse_mode": "HTML" }
+      },
+      "credentials": {
+        "telegramApi": { "id": "TELEGRAM_CREDENTIAL_ID", "name": "Telegram Bot" }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": { "main": [[{ "node": "Extract Input", "type": "main", "index": 0 }]] },
+    "Extract Input": { "main": [[{ "node": "Get Or Create User", "type": "main", "index": 0 }]] },
+    "Get Or Create User": { "main": [[{ "node": "Already Purchased?", "type": "main", "index": 0 }]] },
+    "Already Purchased?": {
+      "main": [
+        [{ "node": "Already Purchased Reply", "type": "main", "index": 0 }],
+        [{ "node": "Build System Prompt", "type": "main", "index": 0 }]
+      ]
+    },
+    "Build System Prompt": { "main": [[{ "node": "Sales AI Agent", "type": "main", "index": 0 }]] },
+    "Claude Haiku": { "ai_languageModel": [[{ "node": "Sales AI Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Chat Memory": { "ai_memory": [[{ "node": "Sales AI Agent", "type": "ai_memory", "index": 0 }]] },
+    "Sales AI Agent": { "main": [[{ "node": "Detect Stage", "type": "main", "index": 0 }]] },
+    "Detect Stage": { "main": [[{ "node": "Update User Stage", "type": "main", "index": 0 }]] },
+    "Update User Stage": { "main": [[{ "node": "Is Purchased Now?", "type": "main", "index": 0 }]] },
+    "Is Purchased Now?": {
+      "main": [
+        [{ "node": "Mark As Purchased", "type": "main", "index": 0 }],
+        [{ "node": "Is Closing Stage?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Mark As Purchased": { "main": [[{ "node": "Send Course Link", "type": "main", "index": 0 }]] },
+    "Send Course Link": { "main": [[{ "node": "Notify Admin", "type": "main", "index": 0 }]] },
+    "Is Closing Stage?": {
+      "main": [
+        [{ "node": "Send With Payment Button", "type": "main", "index": 0 }],
+        [{ "node": "Send Plain Response", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}
