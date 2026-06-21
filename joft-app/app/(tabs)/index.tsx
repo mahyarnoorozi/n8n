@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar, Card, IconChip, Screen, SectionHeader, Tag, Txt } from '@/components';
 import { useAuth } from '@/context/AuthContext';
 import { categories, dailyQuestions } from '@/data/content';
 import { fa } from '@/i18n/fa';
+import { getOccasions, type Occasion } from '@/storage/local';
 import { colors, radius, spacing } from '@/theme';
 import { daysSince, jalaliDayMonth } from '@/utils/jalali';
 import { toFa } from '@/utils/persian';
@@ -18,20 +19,26 @@ export default function Home() {
   const anniversary = user?.anniversary ? new Date(user.anniversary) : new Date();
   const togetherDays = daysSince(anniversary);
 
-  // مناسبت‌های نمونه با تاریخ شمسی — همگی با ظاهر یکدست
-  const events = [
-    { title: 'سالگرد آشنایی', date: anniversary, icon: 'heart-outline' as const },
+  // مناسبت‌ها از حافظهٔ محلی خوانده می‌شوند تا با افزودن/ویرایش هماهنگ بمانند
+  const [occasions, setOccasions] = useState<Occasion[]>([]);
+  useFocusEffect(
+    useCallback(() => {
+      getOccasions().then(setOccasions);
+    }, []),
+  );
+
+  const fallbackEvents = [
+    { title: 'سالگرد آشنایی', date: anniversary, icon: 'heart-outline' },
     {
       title: `تولد ${user?.partnerName ?? 'نیمهٔ دیگرت'}`,
       date: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 12),
-      icon: 'gift-outline' as const,
-    },
-    {
-      title: `تولد ${user?.name ?? 'تو'}`,
-      date: new Date(new Date().getFullYear(), new Date().getMonth() + 2, 3),
-      icon: 'gift-outline' as const,
+      icon: 'gift-outline',
     },
   ];
+  const events =
+    occasions.length > 0
+      ? occasions.map((o) => ({ title: o.title, date: new Date(o.dateISO), icon: o.icon }))
+      : fallbackEvents;
 
   return (
     <Screen>
@@ -65,6 +72,22 @@ export default function Home() {
         </Txt>
       </Card>
 
+      {/* کارت صمیمت — دعوت به ارسال پیام عاشقانه */}
+      <Pressable onPress={() => router.push('/love')} style={styles.loveCard}>
+        <View style={styles.loveIcon}>
+          <Ionicons name="heart" size={22} color={colors.surface} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Txt variant="bodyBold" color={colors.textInverse}>
+            یه پیام عاشقانه بده 💌
+          </Txt>
+          <Txt variant="tiny" color={colors.accentTint} style={{ marginTop: 2 }}>
+            الان وقت خوبیه دل {user?.partnerName ?? 'نیمهٔ دیگرت'} رو ببری
+          </Txt>
+        </View>
+        <Ionicons name="chevron-back" size={20} color={colors.textInverse} />
+      </Pressable>
+
       {/* سؤال امروز */}
       <SectionHeader title={fa.questionOfDay} />
       <Card onPress={() => router.push(`/question/${today.id}`)}>
@@ -81,7 +104,11 @@ export default function Home() {
       </Card>
 
       {/* مناسبت‌های خاص */}
-      <SectionHeader title={fa.specialDates} />
+      <SectionHeader
+        title={fa.specialDates}
+        actionLabel="مدیریت"
+        onAction={() => router.push('/occasions')}
+      />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -90,25 +117,27 @@ export default function Home() {
         {events.map((e, i) => {
           const dm = jalaliDayMonth(e.date);
           return (
-            <Card key={i} style={styles.eventCard}>
-              <View style={styles.eventDate}>
-                <Txt variant="heading" center color={colors.textInverse}>
-                  {dm.day}
+            <Pressable key={i} onPress={() => router.push('/occasions')}>
+              <Card style={styles.eventCard}>
+                <View style={styles.eventDate}>
+                  <Txt variant="heading" center color={colors.textInverse}>
+                    {dm.day}
+                  </Txt>
+                  <Txt variant="tiny" center color={colors.textInverse}>
+                    {dm.month}
+                  </Txt>
+                </View>
+                <Ionicons
+                  name={e.icon as any}
+                  size={16}
+                  color={colors.accent}
+                  style={{ marginTop: spacing.sm }}
+                />
+                <Txt variant="caption" color={colors.text} style={{ marginTop: spacing.xs }}>
+                  {e.title}
                 </Txt>
-                <Txt variant="tiny" center color={colors.textInverse}>
-                  {dm.month}
-                </Txt>
-              </View>
-              <Ionicons
-                name={e.icon}
-                size={16}
-                color={colors.textMuted}
-                style={{ marginTop: spacing.sm }}
-              />
-              <Txt variant="caption" color={colors.text} style={{ marginTop: spacing.xs }}>
-                {e.title}
-              </Txt>
-            </Card>
+              </Card>
+            </Pressable>
           );
         })}
       </ScrollView>
@@ -153,7 +182,24 @@ const styles = StyleSheet.create({
     width: 50,
     height: 54,
     borderRadius: radius.sm,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loveCard: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.accent,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  loveIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    backgroundColor: colors.accentWarm,
     alignItems: 'center',
     justifyContent: 'center',
   },

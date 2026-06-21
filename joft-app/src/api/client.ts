@@ -123,6 +123,11 @@ export const api = {
     return j.memory;
   },
 
+  async sendLove(text: string) {
+    if (DEMO_MODE) return;
+    await req('POST', '/api/love', { text });
+  },
+
   async saveGameResult(gameId: string, answers: number[]) {
     if (DEMO_MODE) return;
     try {

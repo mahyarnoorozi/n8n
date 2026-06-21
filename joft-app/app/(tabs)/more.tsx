@@ -12,14 +12,12 @@ export default function More() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
-  const items: { icon: keyof typeof Ionicons.glyphMap; label: string; route?: string }[] = [
-    { icon: 'person-outline', label: fa.account },
-    { icon: 'heart-outline', label: fa.connectFromMore, route: '/connect' },
-    { icon: 'notifications-outline', label: fa.notifications },
-    { icon: 'language-outline', label: fa.language },
-    { icon: 'lock-closed-outline', label: fa.privacy },
-    { icon: 'help-circle-outline', label: fa.support },
-    { icon: 'information-circle-outline', label: fa.about },
+  const items: { icon: keyof typeof Ionicons.glyphMap; label: string; route: string }[] = [
+    { icon: 'heart-circle-outline', label: 'صمیمت و پیام عاشقانه', route: '/love' },
+    { icon: 'calendar-outline', label: 'مناسبت‌ها و یادآورها', route: '/occasions' },
+    { icon: 'link-outline', label: fa.connectFromMore, route: '/connect' },
+    { icon: 'images-outline', label: 'خاطره‌ها', route: '/(tabs)/memories' },
+    { icon: 'shield-checkmark-outline', label: 'پنل مدیریت', route: '/admin' },
   ];
 
   async function handleLogout() {
@@ -71,9 +69,9 @@ export default function More() {
           <Pressable
             key={item.label}
             style={[styles.item, i > 0 && styles.itemBorder]}
-            onPress={() => item.route && router.push(item.route as any)}
+            onPress={() => router.push(item.route as any)}
           >
-            <Ionicons name={item.icon} size={22} color={colors.primary} />
+            <Ionicons name={item.icon} size={22} color={colors.accent} />
             <Txt variant="subtitle" style={{ flex: 1 }}>
               {item.label}
             </Txt>

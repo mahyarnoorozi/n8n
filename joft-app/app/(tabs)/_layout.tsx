@@ -18,6 +18,8 @@ export default function TabsLayout() {
           height: Platform.OS === 'ios' ? 86 : 66,
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+          // راست‌چین: «خانه» (اولین تب) سمت راست قرار می‌گیرد
+          flexDirection: 'row-reverse',
         },
         tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 },
       }}

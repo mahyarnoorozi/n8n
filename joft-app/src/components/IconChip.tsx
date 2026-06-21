@@ -28,7 +28,7 @@ export function IconChip({ icon, size = 46, active = false, style }: Props) {
       <Ionicons
         name={icon}
         size={size * 0.5}
-        color={active ? colors.accent : colors.ink}
+        color={colors.accent}
       />
     </View>
   );

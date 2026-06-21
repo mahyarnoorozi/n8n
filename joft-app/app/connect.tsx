@@ -106,7 +106,7 @@ export default function Connect() {
             {fa.yourInviteCode}
           </Txt>
           <Card style={{ alignItems: 'center' }}>
-            <Txt center style={styles.codeBig}>
+            <Txt center style={styles.codeBig} numberOfLines={1} adjustsFontSizeToFit>
               {inviteCode}
             </Txt>
             <Txt variant="tiny" center color={colors.textFaint} style={{ marginTop: spacing.xs }}>
@@ -185,7 +185,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   linkedCard: { alignItems: 'center', marginTop: spacing.xl },
-  codeBig: { fontFamily: fonts.black, fontSize: 34, letterSpacing: 8, color: colors.ink },
+  codeBig: {
+    fontFamily: fonts.black,
+    fontSize: 36,
+    lineHeight: 48,
+    letterSpacing: 6,
+    color: colors.accent,
+    writingDirection: 'ltr',
+    paddingHorizontal: spacing.sm,
+  },
   copyBtn: {
     flexDirection: 'row-reverse',
     alignItems: 'center',

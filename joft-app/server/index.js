@@ -241,6 +241,19 @@ app.post('/api/memories', requireAuth, async (req, res) => {
   res.json({ ok: true, memory: { id: m.id, text: m.text, createdAt: m.createdAt, author: 'me' } });
 });
 
+// ---------- پیام عاشقانه (به‌صورت اعلان به نیمهٔ دیگر) ----------
+app.post('/api/love', requireAuth, async (req, res) => {
+  const text = String(req.body?.text || '').trim();
+  if (!text) return res.status(400).json({ ok: false, error: 'empty' });
+  const partner = db.getPartner(req.user.id);
+  if (partner?.pushToken) {
+    await sendPush(partner.pushToken, `پیام عاشقانه از ${req.user.name || 'نیمهٔ دیگرت'} 💞`, text.slice(0, 200), {
+      type: 'love',
+    });
+  }
+  res.json({ ok: true });
+});
+
 // ---------- نتیجهٔ بازی ----------
 app.post('/api/games/:id/result', requireAuth, (req, res) => {
   const couple = db.ensureCouple(req.user.id);
