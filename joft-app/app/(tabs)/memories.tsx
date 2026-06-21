@@ -1,48 +1,41 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Avatar, Card, Screen, Txt } from '@/components';
+import { api, type Memory } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
 import { fa } from '@/i18n/fa';
 import { colors, fonts, radius, spacing } from '@/theme';
 import { formatJalali } from '@/utils/jalali';
 
-type Memory = { id: string; author: string; color: string; text: string; date: Date };
-
 export default function Memories() {
   const { user } = useAuth();
   const [text, setText] = useState('');
-  const [memories, setMemories] = useState<Memory[]>([
-    {
-      id: 'm1',
-      author: user?.partnerName ?? 'نیمهٔ دیگر',
-      color: colors.accent,
-      text: 'یادمه اولین باری که با هم رفتیم کافه، تا صبح حرف زدیم و اصلاً نفهمیدیم چطور گذشت ☕️',
-      date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-    },
-    {
-      id: 'm2',
-      author: user?.name ?? 'من',
-      color: colors.primary,
-      text: 'سفر شمالمون بهترین خاطرهٔ امساله. صدای بارون و جادهٔ جنگلی 🌲',
-      date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-    },
-  ]);
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  function addMemory() {
+  useEffect(() => {
+    api.getMemories().then((list) => {
+      setMemories(list);
+      setLoading(false);
+    });
+  }, []);
+
+  async function addMemory() {
     if (!text.trim()) return;
-    setMemories((prev) => [
-      {
-        id: String(Date.now()),
-        author: user?.name ?? 'من',
-        color: colors.primary,
-        text: text.trim(),
-        date: new Date(),
-      },
-      ...prev,
-    ]);
-    setText('');
+    setSaving(true);
+    try {
+      const m = await api.addMemory(text.trim());
+      setMemories((prev) => [m, ...prev]);
+      setText('');
+    } finally {
+      setSaving(false);
+    }
   }
+
+  const authorName = (m: Memory) =>
+    m.author === 'me' ? user?.name ?? 'من' : user?.partnerName ?? 'نیمهٔ دیگر';
 
   return (
     <Screen>
@@ -51,7 +44,6 @@ export default function Memories() {
         لحظه‌های قشنگتان را ثبت کنید تا همیشه بماند.
       </Txt>
 
-      {/* ورودی افزودن خاطره */}
       <Card style={{ marginTop: spacing.xl }}>
         <TextInput
           value={text}
@@ -63,8 +55,8 @@ export default function Memories() {
         />
         <Pressable
           onPress={addMemory}
-          style={[styles.addBtn, !text.trim() && { opacity: 0.5 }]}
-          disabled={!text.trim()}
+          style={[styles.addBtn, (!text.trim() || saving) && { opacity: 0.5 }]}
+          disabled={!text.trim() || saving}
         >
           <Ionicons name="add" size={18} color={colors.textInverse} />
           <Txt variant="caption" color={colors.textInverse}>
@@ -73,26 +65,37 @@ export default function Memories() {
         </Pressable>
       </Card>
 
-      {/* خط زمانی خاطره‌ها */}
-      <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
-        {memories.map((m) => (
-          <Card key={m.id}>
-            <View style={styles.memHeader}>
-              <Avatar name={m.author} size={36} color={m.color} />
-              <View style={{ flex: 1 }}>
-                <Txt variant="bodyBold">{m.author}</Txt>
-                <Txt variant="tiny" color={colors.textFaint}>
-                  {formatJalali(m.date)}
-                </Txt>
+      {loading ? (
+        <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xl }} />
+      ) : memories.length === 0 ? (
+        <Txt variant="caption" center color={colors.textFaint} style={{ marginTop: spacing.xxl }}>
+          هنوز خاطره‌ای ثبت نشده. اولین خاطره‌تان را بنویسید 🖤
+        </Txt>
+      ) : (
+        <View style={{ marginTop: spacing.xl, gap: spacing.md }}>
+          {memories.map((m) => (
+            <Card key={m.id}>
+              <View style={styles.memHeader}>
+                <Avatar
+                  name={authorName(m)}
+                  size={36}
+                  color={m.author === 'me' ? colors.ink : colors.accent}
+                />
+                <View style={{ flex: 1 }}>
+                  <Txt variant="bodyBold">{authorName(m)}</Txt>
+                  <Txt variant="tiny" color={colors.textFaint}>
+                    {formatJalali(new Date(m.createdAt))}
+                  </Txt>
+                </View>
+                <Ionicons name="heart" size={18} color={colors.accentSoft} />
               </View>
-              <Ionicons name="heart" size={18} color={colors.accentSoft} />
-            </View>
-            <Txt variant="body" style={{ marginTop: spacing.sm }}>
-              {m.text}
-            </Txt>
-          </Card>
-        ))}
-      </View>
+              <Txt variant="body" style={{ marginTop: spacing.sm }}>
+                {m.text}
+              </Txt>
+            </Card>
+          ))}
+        </View>
+      )}
     </Screen>
   );
 }

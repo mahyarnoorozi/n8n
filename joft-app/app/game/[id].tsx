@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Button, Screen, Txt } from '@/components';
+import { api } from '@/api/client';
 import { games, sampleQuiz } from '@/data/content';
 import { colors, radius, spacing } from '@/theme';
 import { toFa } from '@/utils/persian';
@@ -98,7 +99,14 @@ export default function GameDetail() {
             امتیازتان مشخص شود.
           </Txt>
           <View style={styles.footer}>
-            <Button label="ارسال برای نیمهٔ دیگر" icon="paper-plane" onPress={() => router.back()} />
+            <Button
+              label="ارسال برای نیمهٔ دیگر"
+              icon="paper-plane"
+              onPress={async () => {
+                await api.saveGameResult(game.id, answers);
+                router.back();
+              }}
+            />
             <Button label="بازی دوباره" variant="ghost" onPress={restart} style={{ marginTop: spacing.sm }} />
           </View>
         </View>

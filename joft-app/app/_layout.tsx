@@ -11,8 +11,16 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { I18nManager } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { colors } from '@/theme';
+
+/** ثبت اعلان‌ها فقط وقتی کاربر وارد شده باشد. */
+function PushRegistrar() {
+  const { user } = useAuth();
+  usePushNotifications(Boolean(user?.name));
+  return null;
+}
 
 // راست‌به‌چپ کردن کل برنامه برای کاربر ایرانی
 I18nManager.allowRTL(true);
@@ -37,6 +45,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
+        <PushRegistrar />
         <StatusBar style="dark" />
         <Stack
           screenOptions={{
@@ -49,6 +58,7 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="connect" options={{ presentation: 'modal' }} />
           <Stack.Screen name="question/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="game/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="article/[id]" />

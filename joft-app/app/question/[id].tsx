@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Avatar, Button, Card, Screen, Tag, Txt } from '@/components';
+import { api, type AnswerView } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
 import { dailyQuestions } from '@/data/content';
 import { fa } from '@/i18n/fa';
-import { colors, fonts, radius, spacing } from '@/theme';
+import { colors, fonts, spacing } from '@/theme';
 
 export default function QuestionDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -15,11 +16,32 @@ export default function QuestionDetail() {
   const question = dailyQuestions.find((q) => q.id === id) ?? dailyQuestions[0];
 
   const [answer, setAnswer] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [view, setView] = useState<AnswerView | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // پاسخ نمونهٔ نیمهٔ دیگر که بعد از ثبت پاسخِ کاربر باز می‌شود
-  const partnerAnswer =
-    'برام مهم‌ترین چیز این بود که وقتی حرف می‌زدم واقعاً گوش می‌دادی و حس می‌کردم دیده می‌شم 💛';
+  async function refresh() {
+    const v = await api.getAnswers(question.id);
+    setView(v);
+    if (v.mine?.text) setAnswer(v.mine.text);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    refresh();
+  }, [question.id]);
+
+  async function submit() {
+    setSaving(true);
+    try {
+      await api.saveAnswer(question.id, answer.trim());
+      await refresh();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const submitted = Boolean(view?.mine);
 
   return (
     <Screen>
@@ -32,72 +54,79 @@ export default function QuestionDetail() {
       </View>
 
       <View style={styles.hero}>
-        <Ionicons name="chatbubble-ellipses" size={32} color={colors.accent} />
+        <Ionicons name="chatbubble-ellipses-outline" size={32} color={colors.accent} />
         <Txt variant="title" center style={{ marginTop: spacing.md }}>
           {question.text}
         </Txt>
       </View>
 
-      {/* پاسخ کاربر */}
-      <Txt variant="caption" style={{ marginTop: spacing.xl, marginBottom: spacing.sm }}>
-        {fa.yourAnswer}
-      </Txt>
-      {submitted ? (
-        <Card>
-          <View style={styles.answerHead}>
-            <Avatar name={user?.name} size={32} color={colors.primary} />
-            <Txt variant="bodyBold">{user?.name ?? 'من'}</Txt>
-            <Txt variant="tiny" color={colors.success} style={{ marginRight: 'auto' }}>
-              {fa.answered}
-            </Txt>
-          </View>
-          <Txt variant="body" style={{ marginTop: spacing.sm }}>
-            {answer}
-          </Txt>
-        </Card>
+      {loading ? (
+        <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
       ) : (
-        <Card>
-          <TextInput
-            value={answer}
-            onChangeText={setAnswer}
-            placeholder={fa.writeAnswer}
-            placeholderTextColor={colors.textFaint}
-            multiline
-            style={styles.input}
-          />
-        </Card>
-      )}
-
-      {!submitted ? (
-        <Button
-          label={fa.submitAnswer}
-          onPress={() => setSubmitted(true)}
-          disabled={!answer.trim()}
-          style={{ marginTop: spacing.lg }}
-        />
-      ) : null}
-
-      {/* پاسخ نیمهٔ دیگر */}
-      <Txt variant="caption" style={{ marginTop: spacing.xxl, marginBottom: spacing.sm }}>
-        {fa.partnerAnswer}
-      </Txt>
-      {submitted ? (
-        <Card style={{ backgroundColor: colors.accentTint }}>
-          <View style={styles.answerHead}>
-            <Avatar name={user?.partnerName} size={32} color={colors.accent} />
-            <Txt variant="bodyBold">{user?.partnerName ?? 'نیمهٔ دیگر'}</Txt>
-          </View>
-          <Txt variant="body" style={{ marginTop: spacing.sm }}>
-            {partnerAnswer}
+        <>
+          {/* پاسخ کاربر */}
+          <Txt variant="caption" style={{ marginTop: spacing.xl, marginBottom: spacing.sm }}>
+            {fa.yourAnswer}
           </Txt>
-        </Card>
-      ) : (
-        <Card style={styles.locked}>
-          <Ionicons name="lock-closed" size={22} color={colors.textFaint} />
-          <Txt variant="caption" center color={colors.textMuted} style={{ marginTop: spacing.sm }}>
-            {fa.partnerLocked}
+          {submitted ? (
+            <Card>
+              <View style={styles.answerHead}>
+                <Avatar name={user?.name} size={32} color={colors.ink} />
+                <Txt variant="bodyBold">{user?.name ?? 'من'}</Txt>
+                <Txt variant="tiny" color={colors.success} style={{ marginRight: 'auto' }}>
+                  {fa.answered}
+                </Txt>
+              </View>
+              <Txt variant="body" style={{ marginTop: spacing.sm }}>
+                {view?.mine?.text}
+              </Txt>
+            </Card>
+          ) : (
+            <Card>
+              <TextInput
+                value={answer}
+                onChangeText={setAnswer}
+                placeholder={fa.writeAnswer}
+                placeholderTextColor={colors.textFaint}
+                multiline
+                style={styles.input}
+              />
+            </Card>
+          )}
+
+          {!submitted ? (
+            <Button
+              label={fa.submitAnswer}
+              onPress={submit}
+              loading={saving}
+              disabled={!answer.trim()}
+              style={{ marginTop: spacing.lg }}
+            />
+          ) : null}
+
+          {/* پاسخ نیمهٔ دیگر */}
+          <Txt variant="caption" style={{ marginTop: spacing.xxl, marginBottom: spacing.sm }}>
+            {fa.partnerAnswer}
           </Txt>
-        </Card>
+          {submitted && view?.partner ? (
+            <Card style={{ backgroundColor: colors.accentTint, borderColor: colors.accentSoft }}>
+              <View style={styles.answerHead}>
+                <Avatar name={user?.partnerName} size={32} color={colors.accent} />
+                <Txt variant="bodyBold">{user?.partnerName ?? 'نیمهٔ دیگر'}</Txt>
+              </View>
+              <Txt variant="body" style={{ marginTop: spacing.sm }}>
+                {view.partner.text}
+              </Txt>
+            </Card>
+          ) : (
+            <Card style={styles.locked}>
+              <Ionicons name="lock-closed-outline" size={22} color={colors.textFaint} />
+              <Txt variant="caption" center color={colors.textMuted} style={{ marginTop: spacing.sm }}>
+                {submitted ? fa.partnerNotYet : fa.partnerLocked}
+              </Txt>
+            </Card>
+          )}
+        </>
       )}
     </Screen>
   );

@@ -4,5 +4,6 @@ export { Card } from './Card';
 export { Screen } from './Screen';
 export { Avatar } from './Avatar';
 export { IconChip } from './IconChip';
+export { JalaliDatePicker } from './JalaliDatePicker';
 export { Tag } from './Tag';
 export { SectionHeader } from './SectionHeader';

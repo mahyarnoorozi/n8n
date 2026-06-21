@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describeProviderStatus, sendOtp } from './kavenegar.js';
+import { sendPush } from './push.js';
+import * as db from './db.js';
 import {
   addLog,
   checkOtp,
@@ -102,8 +104,148 @@ app.post('/api/auth/verify-otp', (req, res) => {
     return res.status(400).json({ ok: false, error: result, message: messages[result] });
   }
 
-  const token = jwt.sign({ phone }, JWT_SECRET, { expiresIn: '90d' });
-  res.json({ ok: true, token });
+  // ساخت/بازیابی کاربر و صدور توکن
+  const user = db.upsertUserByPhone(phone);
+  const token = jwt.sign({ uid: user.id, phone }, JWT_SECRET, { expiresIn: '90d' });
+  res.json({ ok: true, token, isNewUser: !user.name });
+});
+
+// ---------- میدل‌ور احراز هویت کاربر ----------
+function requireAuth(req, res, next) {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    const user = db.getUserById(payload.uid);
+    if (!user) throw new Error('no user');
+    req.user = user;
+    next();
+  } catch {
+    res.status(401).json({ ok: false, error: 'unauthorized' });
+  }
+}
+
+function publicUser(u) {
+  if (!u) return null;
+  return { id: u.id, name: u.name, partnerName: u.partnerName, anniversary: u.anniversary };
+}
+
+// ---------- پروفایل و زوج ----------
+app.get('/api/me', requireAuth, (req, res) => {
+  const partner = db.getPartner(req.user.id);
+  const couple = req.user.coupleId ? db.getCouple(req.user.coupleId) : null;
+  res.json({
+    ok: true,
+    user: { ...publicUser(req.user), phone: req.user.phone },
+    partner: publicUser(partner),
+    couple: couple ? { id: couple.id, inviteCode: couple.inviteCode, linked: couple.memberIds.length >= 2 } : null,
+  });
+});
+
+app.post('/api/profile', requireAuth, (req, res) => {
+  const { name, partnerName, anniversary } = req.body || {};
+  const patch = {};
+  if (typeof name === 'string') patch.name = name.trim().slice(0, 40);
+  if (typeof partnerName === 'string') patch.partnerName = partnerName.trim().slice(0, 40);
+  if (typeof anniversary === 'string') patch.anniversary = anniversary;
+  db.updateUser(req.user.id, patch);
+  res.json({ ok: true, user: publicUser(db.getUserById(req.user.id)) });
+});
+
+/** ساخت/گرفتن کد دعوت برای پیوند دادن نیمهٔ دیگر. */
+app.post('/api/couple/invite', requireAuth, (req, res) => {
+  const couple = db.ensureCouple(req.user.id);
+  res.json({ ok: true, inviteCode: couple.inviteCode, linked: couple.memberIds.length >= 2 });
+});
+
+/** پیوستن با کد دعوت. */
+app.post('/api/couple/join', requireAuth, async (req, res) => {
+  const code = String(req.body?.code || '').trim().toUpperCase();
+  if (!/^[A-Z0-9]{6}$/.test(code)) {
+    return res.status(400).json({ ok: false, error: 'invalid_code', message: 'کد دعوت نامعتبر است.' });
+  }
+  const result = db.joinCouple(req.user.id, code);
+  if (result.error === 'not_found')
+    return res.status(404).json({ ok: false, message: 'کدی با این مشخصات پیدا نشد.' });
+  if (result.error === 'full')
+    return res.status(409).json({ ok: false, message: 'این زوج قبلاً تکمیل شده است.' });
+
+  // به نیمهٔ دیگر خبر بده
+  const partner = db.getPartner(req.user.id);
+  if (partner?.pushToken) {
+    await sendPush(partner.pushToken, 'جفت', `${req.user.name || 'نیمهٔ دیگرت'} به تو وصل شد 💞`);
+  }
+  res.json({ ok: true, partner: publicUser(partner) });
+});
+
+app.post('/api/push/token', requireAuth, (req, res) => {
+  const token = String(req.body?.token || '').trim();
+  db.updateUser(req.user.id, { pushToken: token });
+  res.json({ ok: true });
+});
+
+// ---------- پاسخ سؤال‌ها ----------
+app.get('/api/questions/:id/answers', requireAuth, (req, res) => {
+  const couple = db.ensureCouple(req.user.id);
+  const all = db.getAnswers(couple.id, req.params.id);
+  const mine = all.find((a) => a.userId === req.user.id) || null;
+  const partner = db.getPartner(req.user.id);
+  const theirs = partner ? all.find((a) => a.userId === partner.id) || null : null;
+  res.json({
+    ok: true,
+    mine: mine ? { text: mine.text } : null,
+    // پاسخ نیمهٔ دیگر فقط وقتی نمایش داده می‌شود که خودت جواب داده باشی
+    partner: mine && theirs ? { text: theirs.text } : null,
+    partnerAnswered: Boolean(theirs),
+  });
+});
+
+app.post('/api/questions/:id/answer', requireAuth, async (req, res) => {
+  const text = String(req.body?.text || '').trim();
+  if (!text) return res.status(400).json({ ok: false, error: 'empty' });
+  const couple = db.ensureCouple(req.user.id);
+  db.addAnswer(couple.id, req.user.id, req.params.id, text.slice(0, 1000));
+  const partner = db.getPartner(req.user.id);
+  if (partner?.pushToken) {
+    await sendPush(partner.pushToken, 'سؤال روز', `${req.user.name || 'نیمهٔ دیگرت'} به سؤال امروز جواب داد ✍️`, {
+      type: 'answer',
+      questionId: req.params.id,
+    });
+  }
+  res.json({ ok: true });
+});
+
+// ---------- خاطره‌ها ----------
+app.get('/api/memories', requireAuth, (req, res) => {
+  const couple = db.ensureCouple(req.user.id);
+  const list = db.getMemories(couple.id).map((m) => ({
+    id: m.id,
+    text: m.text,
+    createdAt: m.createdAt,
+    author: m.userId === req.user.id ? 'me' : 'partner',
+  }));
+  res.json({ ok: true, memories: list });
+});
+
+app.post('/api/memories', requireAuth, async (req, res) => {
+  const text = String(req.body?.text || '').trim();
+  if (!text) return res.status(400).json({ ok: false, error: 'empty' });
+  const couple = db.ensureCouple(req.user.id);
+  const m = db.addMemory(couple.id, req.user.id, text.slice(0, 1000));
+  const partner = db.getPartner(req.user.id);
+  if (partner?.pushToken) {
+    await sendPush(partner.pushToken, 'خاطرهٔ تازه', `${req.user.name || 'نیمهٔ دیگرت'} یک خاطره ثبت کرد 🖤`, {
+      type: 'memory',
+    });
+  }
+  res.json({ ok: true, memory: { id: m.id, text: m.text, createdAt: m.createdAt, author: 'me' } });
+});
+
+// ---------- نتیجهٔ بازی ----------
+app.post('/api/games/:id/result', requireAuth, (req, res) => {
+  const couple = db.ensureCouple(req.user.id);
+  db.addGameResult(couple.id, req.user.id, req.params.id, req.body?.answers ?? []);
+  res.json({ ok: true });
 });
 
 // ---------- ادمین: احراز با رمز ----------

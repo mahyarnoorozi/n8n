@@ -30,6 +30,53 @@ function gregorianToJalali(gy: number, gm: number, gd: number): [number, number,
   return [jy, jm, jd];
 }
 
+/** تبدیل تاریخ شمسی (جلالی) به میلادی — برای ذخیرهٔ تاریخِ انتخاب‌شده. */
+export function jalaliToGregorian(jy: number, jm: number, jd: number): [number, number, number] {
+  let gy = jy <= 979 ? 621 : 1600;
+  jy -= jy <= 979 ? 0 : 979;
+  let days =
+    365 * jy +
+    Math.floor(jy / 33) * 8 +
+    Math.floor(((jy % 33) + 3) / 4) +
+    78 +
+    jd +
+    (jm < 7 ? (jm - 1) * 31 : (jm - 7) * 30 + 186);
+  gy += 400 * Math.floor(days / 146097);
+  days %= 146097;
+  if (days > 36524) {
+    gy += 100 * Math.floor(--days / 36524);
+    days %= 36524;
+    if (days >= 365) days++;
+  }
+  gy += 4 * Math.floor(days / 1461);
+  days %= 1461;
+  if (days > 365) {
+    gy += Math.floor((days - 1) / 365);
+    days = (days - 1) % 365;
+  }
+  let gd = days + 1;
+  const leap = (gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0;
+  const monthDays = [0, 31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  let gm = 0;
+  for (gm = 1; gm <= 12; gm++) {
+    if (gd <= monthDays[gm]) break;
+    gd -= monthDays[gm];
+  }
+  return [gy, gm, gd];
+}
+
+/** ساخت شیء Date از تاریخ شمسی. */
+export function jalaliToDate(jy: number, jm: number, jd: number): Date {
+  const [gy, gm, gd] = jalaliToGregorian(jy, jm, jd);
+  return new Date(gy, gm - 1, gd);
+}
+
+/** اجزای تاریخ شمسیِ یک Date به‌صورت عددی. */
+export function toJalaliParts(date: Date): { jy: number; jm: number; jd: number } {
+  const [jy, jm, jd] = gregorianToJalali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+  return { jy, jm, jd };
+}
+
 export const JALALI_MONTHS = [
   'فروردین',
   'اردیبهشت',

@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
-import { Avatar, Button, Screen, Txt } from '@/components';
+import { Avatar, Button, JalaliDatePicker, Screen, Txt } from '@/components';
 import { useAuth } from '@/context/AuthContext';
 import { fa } from '@/i18n/fa';
 import { colors, fonts, radius, spacing } from '@/theme';
@@ -11,6 +11,7 @@ export default function ProfileSetup() {
   const { completeProfile } = useAuth();
   const [name, setName] = useState('');
   const [partner, setPartner] = useState('');
+  const [anniversary, setAnniversary] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleFinish() {
@@ -18,7 +19,7 @@ export default function ProfileSetup() {
     await completeProfile({
       name: name.trim() || 'من',
       partnerName: partner.trim() || undefined,
-      anniversary: new Date().toISOString(),
+      anniversary: (anniversary ?? new Date()).toISOString(),
     });
     setLoading(false);
     router.replace('/(tabs)');
@@ -50,6 +51,17 @@ export default function ProfileSetup() {
         onChange={setPartner}
         placeholder={fa.partnerPlaceholder}
       />
+
+      <View style={{ marginTop: spacing.xl }}>
+        <Txt variant="caption" style={{ marginBottom: spacing.sm }}>
+          {fa.anniversaryLabel}
+        </Txt>
+        <JalaliDatePicker
+          value={anniversary}
+          onChange={setAnniversary}
+          placeholder="مثلاً ۱ فروردین ۱۴۰۳"
+        />
+      </View>
 
       <Button
         label={fa.finish}

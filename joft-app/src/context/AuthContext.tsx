@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { requestOtp, verifyOtp } from '@/api/auth';
+import { api, loadToken, setToken } from '@/api/client';
 import { toEn } from '@/utils/persian';
 
 /**
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
+        await loadToken();
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (raw) setUser(JSON.parse(raw));
       } catch {
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const result = await verifyOtp(phone, c);
     if (!result.ok) return false;
     setPendingToken(result.token);
+    if (result.token) await setToken(result.token);
     // پروفایل ناقص ساخته می‌شود تا کاربر به مرحلهٔ تکمیل اطلاعات برود
     if (!user) await persist({ phone, token: result.token });
     return true;
@@ -84,11 +87,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ...data,
     };
     await persist(next);
+    // هم‌گام‌سازی با سرور (در حالت دمو محلی ذخیره می‌شود)
+    try {
+      await api.saveProfile({
+        name: next.name,
+        partnerName: next.partnerName,
+        anniversary: next.anniversary,
+      });
+    } catch {
+      // اگر سرور در دسترس نبود، داده محلی می‌ماند و بعداً هم‌گام می‌شود
+    }
   }
 
   async function logout() {
     setPendingPhone(null);
     setPendingToken(undefined);
+    await setToken(null);
     await persist(null);
   }
 

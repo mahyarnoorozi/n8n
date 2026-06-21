@@ -83,6 +83,7 @@ export const fa = {
   yourAnswer: 'پاسخ تو',
   partnerAnswer: 'پاسخ نیمهٔ دیگرت',
   partnerLocked: 'وقتی تو جواب بدهی، پاسخ او هم باز می‌شود.',
+  partnerNotYet: 'نیمهٔ دیگرت هنوز جواب نداده. به‌محض پاسخ او اینجا نمایش داده می‌شود.',
   writeAnswer: 'پاسخت را بنویس...',
   submitAnswer: 'ثبت پاسخ',
   answered: 'ثبت شد! ✅',
@@ -91,6 +92,22 @@ export const fa = {
   memoriesTitle: 'خاطره‌های ما',
   addMemory: 'افزودن خاطره',
   memoryPlaceholder: 'یک خاطرهٔ قشنگ بنویس...',
+
+  // اتصال نیمهٔ دیگر
+  connectTitle: 'اتصال به نیمهٔ دیگر',
+  connectSubtitle: 'با یک کد، حساب‌هایتان را به هم وصل کنید تا پاسخ‌ها و خاطره‌ها بین شما مشترک شود.',
+  yourInviteCode: 'کد دعوت تو',
+  shareHint: 'این کد را برای نیمهٔ دیگرت بفرست تا وارد کند.',
+  copyCode: 'کپی کد',
+  copied: 'کپی شد ✅',
+  orDivider: 'یا',
+  enterPartnerCode: 'کد دعوت او را وارد کن',
+  codePlaceholder: 'کد ۶ حرفی',
+  connectButton: 'اتصال حساب‌ها',
+  connectedTitle: 'به هم وصل شدید! 💞',
+  connectedDesc: 'حالا پاسخ سؤال‌ها و خاطره‌هایتان با هم هم‌گام می‌شود.',
+  alreadyLinked: 'شما هم‌اکنون به هم وصل هستید.',
+  connectFromMore: 'اتصال / دعوت نیمهٔ دیگر',
 
   // بیشتر / پروفایل
   account: 'حساب کاربری',

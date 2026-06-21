@@ -12,9 +12,9 @@ export default function More() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
-  const items: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
+  const items: { icon: keyof typeof Ionicons.glyphMap; label: string; route?: string }[] = [
     { icon: 'person-outline', label: fa.account },
-    { icon: 'heart-outline', label: fa.partner },
+    { icon: 'heart-outline', label: fa.connectFromMore, route: '/connect' },
     { icon: 'notifications-outline', label: fa.notifications },
     { icon: 'language-outline', label: fa.language },
     { icon: 'lock-closed-outline', label: fa.privacy },
@@ -64,7 +64,11 @@ export default function More() {
       {/* فهرست تنظیمات */}
       <Card style={{ marginTop: spacing.lg }} padded={false}>
         {items.map((item, i) => (
-          <Pressable key={item.label} style={[styles.item, i > 0 && styles.itemBorder]}>
+          <Pressable
+            key={item.label}
+            style={[styles.item, i > 0 && styles.itemBorder]}
+            onPress={() => item.route && router.push(item.route as any)}
+          >
             <Ionicons name={item.icon} size={22} color={colors.primary} />
             <Txt variant="subtitle" style={{ flex: 1 }}>
               {item.label}

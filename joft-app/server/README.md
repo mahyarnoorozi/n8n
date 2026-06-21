@@ -29,7 +29,16 @@ npm start                # http://localhost:4000
 |------------|-----|
 | `GET /api/health` | وضعیت سرویس و این‌که کلید تنظیم شده یا نه |
 | `POST /api/auth/request-otp` | `{ phone }` → تولید و ارسال کد |
-| `POST /api/auth/verify-otp` | `{ phone, code }` → تأیید و صدور توکن |
+| `POST /api/auth/verify-otp` | `{ phone, code }` → تأیید، ساخت کاربر، صدور توکن |
+| `GET /api/me` | اطلاعات کاربر، نیمهٔ دیگر و وضعیت اتصال |
+| `POST /api/profile` | `{ name, partnerName, anniversary }` |
+| `POST /api/couple/invite` | ساخت/گرفتن کد دعوت ۶ حرفی |
+| `POST /api/couple/join` | `{ code }` → اتصال دو حساب + اعلان به طرف مقابل |
+| `POST /api/push/token` | ذخیرهٔ توکن اعلان دستگاه (Expo Push) |
+| `GET /api/questions/:id/answers` | پاسخ من + پاسخ نیمهٔ دیگر (قفل‌دار) |
+| `POST /api/questions/:id/answer` | ثبت پاسخ + اعلان به نیمهٔ دیگر |
+| `GET /api/memories` · `POST /api/memories` | خاطره‌های مشترک زوج |
+| `POST /api/games/:id/result` | ذخیرهٔ نتیجهٔ بازی |
 | `POST /api/admin/login` | `{ password }` → ورود مدیر |
 | `GET /api/admin/settings` | خواندن تنظیمات (کلید ماسک‌شده) |
 | `POST /api/admin/settings` | ذخیرهٔ کلید API، الگو، روش و... |
