@@ -27,7 +27,7 @@ export default function QuestionDetail() {
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Ionicons name="close" size={26} color={colors.text} />
         </Pressable>
-        <Tag label={question.category} bg={colors.lavender} color={colors.primary} />
+        <Tag label={question.category} />
         <View style={{ width: 26 }} />
       </View>
 

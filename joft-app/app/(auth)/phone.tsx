@@ -24,9 +24,14 @@ export default function PhoneScreen() {
     }
     setError('');
     setLoading(true);
-    await sendCode(phone);
-    setLoading(false);
-    router.push('/(auth)/verify');
+    try {
+      await sendCode(phone);
+      router.push('/(auth)/verify');
+    } catch (e: any) {
+      setError(e?.message || 'ارسال کد ناموفق بود. دوباره تلاش کن.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

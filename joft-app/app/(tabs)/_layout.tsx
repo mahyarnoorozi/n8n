@@ -26,15 +26,21 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: fa.tabHome,
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="questions"
         options={{
           title: fa.tabQuestions,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-ellipses" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -42,8 +48,12 @@ export default function TabsLayout() {
         name="games"
         options={{
           title: fa.tabGames,
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="game-controller" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'game-controller' : 'game-controller-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -51,14 +61,18 @@ export default function TabsLayout() {
         name="memories"
         options={{
           title: fa.tabMemories,
-          tabBarIcon: ({ color, size }) => <Ionicons name="images" size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'images' : 'images-outline'} size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="more"
         options={{
           title: fa.tabMore,
-          tabBarIcon: ({ color, size }) => <Ionicons name="grid" size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={color} />
+          ),
         }}
       />
     </Tabs>

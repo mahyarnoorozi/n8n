@@ -13,13 +13,13 @@ export default function More() {
   const { user, logout } = useAuth();
 
   const items: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
-    { icon: 'person-circle', label: fa.account },
-    { icon: 'heart', label: fa.partner },
-    { icon: 'notifications', label: fa.notifications },
-    { icon: 'language', label: fa.language },
-    { icon: 'lock-closed', label: fa.privacy },
-    { icon: 'help-circle', label: fa.support },
-    { icon: 'information-circle', label: fa.about },
+    { icon: 'person-outline', label: fa.account },
+    { icon: 'heart-outline', label: fa.partner },
+    { icon: 'notifications-outline', label: fa.notifications },
+    { icon: 'language-outline', label: fa.language },
+    { icon: 'lock-closed-outline', label: fa.privacy },
+    { icon: 'help-circle-outline', label: fa.support },
+    { icon: 'information-circle-outline', label: fa.about },
   ];
 
   async function handleLogout() {
@@ -75,7 +75,7 @@ export default function More() {
       </Card>
 
       <Pressable onPress={handleLogout} style={styles.logout}>
-        <Ionicons name="log-out" size={20} color={colors.accent} />
+        <Ionicons name="log-out-outline" size={20} color={colors.accent} />
         <Txt variant="bodyBold" color={colors.accent}>
           {fa.logout}
         </Txt>

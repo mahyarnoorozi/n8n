@@ -1,17 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { requestOtp, verifyOtp } from '@/api/auth';
 import { toEn } from '@/utils/persian';
 
 /**
  * مدیریت احراز هویت با شمارهٔ موبایل.
  *
- * توجه: ارسال واقعی پیامک نیاز به یک سرویس پیامکی دارد (برای ایران مثلاً
- * کاوه‌نگار، قاصدک، ملی‌پیامک یا Firebase Phone Auth). این لایه فعلاً به‌صورت
- * نمایشی (mock) کار می‌کند و کد ثابت «۱۲۳۴» را می‌پذیرد تا کل جریان قابل تست باشد.
- * فقط کافی است متدهای sendCode و verifyCode را به API واقعی وصل کنی.
+ * این لایه به بک‌اند پروژه (پوشهٔ server/) وصل می‌شود که خودش پیامک را از طریق
+ * «کاوه‌نگار» می‌فرستد و کلید API را امن نگه می‌دارد. اگر آدرس سرور تنظیم نشده
+ * باشد (EXPO_PUBLIC_API_URL خالی)، اپ در حالت دمو با کد ۱۲۳۴ کار می‌کند.
  */
 
-const DEMO_CODE = '1234';
 const STORAGE_KEY = '@joft/user';
 
 export type User = {
@@ -19,6 +18,7 @@ export type User = {
   name?: string;
   partnerName?: string;
   anniversary?: string; // ISO date
+  token?: string;
 };
 
 type AuthState = {
@@ -36,6 +36,7 @@ const AuthContext = createContext<AuthState | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [pendingPhone, setPendingPhone] = useState<string | null>(null);
+  const [pendingToken, setPendingToken] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,27 +58,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     else await AsyncStorage.removeItem(STORAGE_KEY);
   }
 
+  /** ارسال کد؛ در صورت خطا (مثل محدودیت نرخ) پیام فارسی throw می‌شود. */
   async function sendCode(phone: string) {
-    // اینجا درخواست ارسال پیامک به سرویس واقعی زده می‌شود
-    setPendingPhone(toEn(phone).replace(/\D/g, ''));
-    await new Promise((r) => setTimeout(r, 600)); // شبیه‌سازی تأخیر شبکه
+    const normalized = toEn(phone).replace(/\D/g, '');
+    setPendingPhone(normalized);
+    await requestOtp(normalized); // در صورت خطا، پیام را به صفحه می‌رساند
   }
 
   async function verifyCode(code: string): Promise<boolean> {
-    await new Promise((r) => setTimeout(r, 400));
-    if (toEn(code).replace(/\D/g, '') !== DEMO_CODE) return false;
+    const c = toEn(code).replace(/\D/g, '');
+    const phone = pendingPhone ?? user?.phone ?? '';
+    const result = await verifyOtp(phone, c);
+    if (!result.ok) return false;
+    setPendingToken(result.token);
     // پروفایل ناقص ساخته می‌شود تا کاربر به مرحلهٔ تکمیل اطلاعات برود
-    if (!user) await persist({ phone: pendingPhone ?? '' });
+    if (!user) await persist({ phone, token: result.token });
     return true;
   }
 
   async function completeProfile(data: Partial<User>) {
-    const next: User = { phone: pendingPhone ?? user?.phone ?? '', ...user, ...data };
+    const next: User = {
+      phone: pendingPhone ?? user?.phone ?? '',
+      token: pendingToken ?? user?.token,
+      ...user,
+      ...data,
+    };
     await persist(next);
   }
 
   async function logout() {
     setPendingPhone(null);
+    setPendingToken(undefined);
     await persist(null);
   }
 

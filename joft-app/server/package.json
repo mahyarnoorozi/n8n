@@ -1,0 +1,16 @@
+{
+  "name": "joft-server",
+  "version": "1.0.0",
+  "description": "بک‌اند احراز هویت پیامکی (کاوه‌نگار) و پنل مدیریت اپ جفت",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

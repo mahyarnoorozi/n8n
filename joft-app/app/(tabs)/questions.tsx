@@ -21,7 +21,7 @@ export default function Questions() {
           <Card key={q.id} onPress={() => router.push(`/question/${q.id}`)}>
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
-                <Tag label={q.category} bg={colors.lavender} color={colors.primary} />
+                <Tag label={q.category} />
                 <Txt variant="subtitle" style={{ marginTop: spacing.sm }}>
                   {q.text}
                 </Txt>

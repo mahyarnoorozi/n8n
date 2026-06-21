@@ -15,19 +15,20 @@ export const radius = {
   pill: 999,
 } as const;
 
+// سایه‌های بسیار ملایم؛ جداکنندهٔ اصلیِ کارت‌ها «خط مویی» است نه سایهٔ سنگین.
 export const shadow = {
   card: {
-    shadowColor: '#2B2A4C',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 3,
+    shadowColor: '#1B1A29',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 1,
   },
   soft: {
-    shadowColor: '#2B2A4C',
+    shadowColor: '#1B1A29',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   },
 } as const;

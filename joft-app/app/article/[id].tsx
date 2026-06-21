@@ -17,12 +17,12 @@ export default function ArticleDetail() {
         <Ionicons name="chevron-forward" size={26} color={colors.text} />
       </Pressable>
 
-      <View style={[styles.cover, { backgroundColor: article.bg }]}>
-        <Ionicons name="book" size={44} color={colors.primary} />
+      <View style={styles.cover}>
+        <Ionicons name={(article.icon as any) ?? 'book-outline'} size={44} color={colors.ink} />
       </View>
 
       <View style={styles.metaRow}>
-        <Tag label={article.category} bg={colors.lavender} color={colors.primary} />
+        <Tag label={article.category} />
         <Txt variant="tiny" color={colors.textFaint}>
           {article.readTime}
         </Txt>
@@ -55,6 +55,9 @@ const styles = StyleSheet.create({
   cover: {
     height: 160,
     borderRadius: radius.lg,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },

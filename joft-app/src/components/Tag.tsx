@@ -9,8 +9,8 @@ type Props = {
   color?: string;
 };
 
-/** برچسب کوچک برای دسته‌بندی، زمان مطالعه و... */
-export function Tag({ label, bg = colors.accentSoft, color = colors.accentDark }: Props) {
+/** برچسب کوچک برای دسته‌بندی، زمان مطالعه و... — به‌صورت پیش‌فرض خنثی و آرام. */
+export function Tag({ label, bg = colors.chip, color = colors.textMuted }: Props) {
   return (
     <View style={[styles.tag, { backgroundColor: bg }]}>
       <Txt variant="tiny" color={color}>

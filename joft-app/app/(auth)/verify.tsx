@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { fa } from '@/i18n/fa';
 import { colors, fonts, radius, spacing } from '@/theme';
 import { formatIranPhone, toEn, toFa } from '@/utils/persian';
+import { DEMO_MODE } from '@/config';
 
 const CODE_LENGTH = 4;
 const RESEND_SECONDS = 60;
@@ -101,11 +102,11 @@ export default function VerifyScreen() {
         <Txt variant="caption" center color={colors.accent} style={{ marginTop: spacing.md }}>
           {error}
         </Txt>
-      ) : (
+      ) : DEMO_MODE ? (
         <Txt variant="tiny" center color={colors.textFaint} style={{ marginTop: spacing.md }}>
           {fa.demoHint}
         </Txt>
-      )}
+      ) : null}
 
       <View style={styles.resendRow}>
         {timer > 0 ? (

@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Avatar, Card, Screen, SectionHeader, Tag, Txt } from '@/components';
+import { Avatar, Card, IconChip, Screen, SectionHeader, Tag, Txt } from '@/components';
 import { useAuth } from '@/context/AuthContext';
 import { categories, dailyQuestions } from '@/data/content';
 import { fa } from '@/i18n/fa';
-import { colors, radius, shadow, spacing } from '@/theme';
+import { colors, radius, spacing } from '@/theme';
 import { daysSince, jalaliDayMonth } from '@/utils/jalali';
 import { toFa } from '@/utils/persian';
 
@@ -18,20 +18,18 @@ export default function Home() {
   const anniversary = user?.anniversary ? new Date(user.anniversary) : new Date();
   const togetherDays = daysSince(anniversary);
 
-  // مناسبت‌های نمونه با تاریخ شمسی
+  // مناسبت‌های نمونه با تاریخ شمسی — همگی با ظاهر یکدست
   const events = [
-    { title: 'سالگرد آشنایی', date: anniversary, icon: 'heart' as const, color: colors.accent },
+    { title: 'سالگرد آشنایی', date: anniversary, icon: 'heart-outline' as const },
     {
       title: `تولد ${user?.partnerName ?? 'نیمهٔ دیگرت'}`,
       date: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 12),
-      icon: 'gift' as const,
-      color: colors.primary,
+      icon: 'gift-outline' as const,
     },
     {
       title: `تولد ${user?.name ?? 'تو'}`,
       date: new Date(new Date().getFullYear(), new Date().getMonth() + 2, 3),
-      icon: 'gift' as const,
-      color: colors.success,
+      icon: 'gift-outline' as const,
     },
   ];
 
@@ -53,7 +51,7 @@ export default function Home() {
       {/* کارت رابطه */}
       <Card style={styles.relCard} padded>
         <View style={styles.relAvatars}>
-          <Avatar name={user?.name} size={56} color={colors.primary} />
+          <Avatar name={user?.name} size={56} color={colors.ink} />
           <View style={styles.heartLink}>
             <Ionicons name="heart" size={20} color={colors.accent} />
           </View>
@@ -69,19 +67,16 @@ export default function Home() {
 
       {/* سؤال امروز */}
       <SectionHeader title={fa.questionOfDay} />
-      <Card
-        onPress={() => router.push(`/question/${today.id}`)}
-        style={styles.questionCard}
-      >
+      <Card onPress={() => router.push(`/question/${today.id}`)}>
         <Tag label={today.category} />
         <Txt variant="subtitle" style={{ marginTop: spacing.md, marginBottom: spacing.lg }}>
           {today.text}
         </Txt>
         <View style={styles.answerRow}>
+          <Ionicons name="arrow-back" size={16} color={colors.accent} />
           <Txt variant="caption" color={colors.accent}>
             {fa.answerNow}
           </Txt>
-          <Ionicons name="arrow-back" size={16} color={colors.accent} />
         </View>
       </Card>
 
@@ -96,7 +91,7 @@ export default function Home() {
           const dm = jalaliDayMonth(e.date);
           return (
             <Card key={i} style={styles.eventCard}>
-              <View style={[styles.eventDate, { backgroundColor: e.color }]}>
+              <View style={styles.eventDate}>
                 <Txt variant="heading" center color={colors.textInverse}>
                   {dm.day}
                 </Txt>
@@ -104,7 +99,12 @@ export default function Home() {
                   {dm.month}
                 </Txt>
               </View>
-              <Ionicons name={e.icon} size={18} color={e.color} style={{ marginTop: spacing.sm }} />
+              <Ionicons
+                name={e.icon}
+                size={16}
+                color={colors.textMuted}
+                style={{ marginTop: spacing.sm }}
+              />
               <Txt variant="caption" color={colors.text} style={{ marginTop: spacing.xs }}>
                 {e.title}
               </Txt>
@@ -113,17 +113,17 @@ export default function Home() {
         })}
       </ScrollView>
 
-      {/* کاوش بر اساس موضوع */}
+      {/* کاوش بر اساس موضوع — سلول‌های کاملاً یکدست */}
       <SectionHeader title={fa.exploreCats} />
       <View style={styles.catGrid}>
         {categories.map((c) => (
           <Pressable
             key={c.id}
-            style={[styles.catCard, { backgroundColor: c.bg }]}
+            style={styles.catCard}
             onPress={() => router.push('/(tabs)/questions')}
           >
-            <Ionicons name={c.icon as any} size={26} color={colors.primary} />
-            <Txt variant="bodyBold" style={{ marginTop: spacing.sm }}>
+            <IconChip icon={c.icon as any} size={42} />
+            <Txt variant="bodyBold" style={{ marginTop: spacing.md }}>
               {c.title}
             </Txt>
             <Txt variant="tiny" color={colors.textMuted}>
@@ -143,25 +143,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
   },
-  relCard: { backgroundColor: colors.surface, alignItems: 'center' },
+  relCard: { alignItems: 'center' },
   relAvatars: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.xs },
   heartLink: { paddingHorizontal: spacing.sm },
-  questionCard: { backgroundColor: colors.surface },
   answerRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.xs },
-  eventsRow: { gap: spacing.md, paddingVertical: spacing.xs },
-  eventCard: { width: 130, alignItems: 'flex-start' },
+  eventsRow: { gap: spacing.md, paddingVertical: spacing.xs, paddingLeft: spacing.xs },
+  eventCard: { width: 132, alignItems: 'flex-start' },
   eventDate: {
-    width: 52,
-    height: 56,
+    width: 50,
+    height: 54,
     borderRadius: radius.sm,
+    backgroundColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
   },
   catGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: spacing.md },
   catCard: {
-    width: '47%',
+    width: '47.5%',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.hairline,
     borderRadius: radius.lg,
     padding: spacing.lg,
-    ...shadow.soft,
   },
 });
