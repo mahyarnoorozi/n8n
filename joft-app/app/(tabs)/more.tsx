@@ -1,0 +1,119 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Avatar, Card, Screen, Txt } from '@/components';
+import { useAuth } from '@/context/AuthContext';
+import { fa } from '@/i18n/fa';
+import { colors, radius, spacing } from '@/theme';
+import { formatIranPhone } from '@/utils/persian';
+
+export default function More() {
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const items: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
+    { icon: 'person-circle', label: fa.account },
+    { icon: 'heart', label: fa.partner },
+    { icon: 'notifications', label: fa.notifications },
+    { icon: 'language', label: fa.language },
+    { icon: 'lock-closed', label: fa.privacy },
+    { icon: 'help-circle', label: fa.support },
+    { icon: 'information-circle', label: fa.about },
+  ];
+
+  async function handleLogout() {
+    await logout();
+    router.replace('/onboarding');
+  }
+
+  return (
+    <Screen>
+      <Txt variant="title">{fa.tabMore}</Txt>
+
+      {/* کارت کاربر */}
+      <Card style={{ marginTop: spacing.lg }}>
+        <View style={styles.userRow}>
+          <Avatar name={user?.name} size={56} />
+          <View style={{ flex: 1 }}>
+            <Txt variant="heading">{user?.name ?? ''}</Txt>
+            <Txt variant="caption" color={colors.textMuted}>
+              {user?.phone ? `‎+۹۸ ${formatIranPhone(user.phone)}` : ''}
+            </Txt>
+          </View>
+        </View>
+      </Card>
+
+      {/* بنر نسخهٔ ویژه — تنها جای پررنگِ قرمز */}
+      <Pressable style={styles.premium}>
+        <View style={{ flex: 1 }}>
+          <Txt variant="heading" color={colors.textInverse}>
+            ✨ {fa.premium}
+          </Txt>
+          <Txt variant="caption" color={colors.accentTint} style={{ marginTop: spacing.xs }}>
+            {fa.premiumDesc}
+          </Txt>
+        </View>
+        <View style={styles.upgradeBtn}>
+          <Txt variant="tiny" color={colors.accent}>
+            {fa.upgrade}
+          </Txt>
+        </View>
+      </Pressable>
+
+      {/* فهرست تنظیمات */}
+      <Card style={{ marginTop: spacing.lg }} padded={false}>
+        {items.map((item, i) => (
+          <Pressable key={item.label} style={[styles.item, i > 0 && styles.itemBorder]}>
+            <Ionicons name={item.icon} size={22} color={colors.primary} />
+            <Txt variant="subtitle" style={{ flex: 1 }}>
+              {item.label}
+            </Txt>
+            <Ionicons name="chevron-back" size={18} color={colors.textFaint} />
+          </Pressable>
+        ))}
+      </Card>
+
+      <Pressable onPress={handleLogout} style={styles.logout}>
+        <Ionicons name="log-out" size={20} color={colors.accent} />
+        <Txt variant="bodyBold" color={colors.accent}>
+          {fa.logout}
+        </Txt>
+      </Pressable>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  userRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.md },
+  premium: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.accent,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  upgradeBtn: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  item: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  itemBorder: { borderTopWidth: 1, borderTopColor: colors.border },
+  logout: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+    padding: spacing.lg,
+  },
+});
