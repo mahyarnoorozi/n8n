@@ -1,7 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { Button, Screen, Txt } from '@/components';
 import { useAuth } from '@/context/AuthContext';
 import { fa } from '@/i18n/fa';
@@ -56,6 +64,10 @@ export default function VerifyScreen() {
 
   return (
     <Screen scroll={false}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <Pressable onPress={() => router.back()} style={styles.back} hitSlop={12}>
         <Ionicons name="chevron-forward" size={26} color={colors.text} />
       </Pressable>
@@ -122,14 +134,17 @@ export default function VerifyScreen() {
         )}
       </View>
 
-      <View style={styles.footer}>
-        <Button
-          label={fa.verifyButton}
-          onPress={() => handleVerify()}
-          loading={loading}
-          disabled={code.length !== CODE_LENGTH}
-        />
-      </View>
+        <View style={{ flex: 1 }} />
+
+        <View style={styles.footer}>
+          <Button
+            label={fa.verifyButton}
+            onPress={() => handleVerify()}
+            loading={loading}
+            disabled={code.length !== CODE_LENGTH}
+          />
+        </View>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
@@ -156,5 +171,5 @@ const styles = StyleSheet.create({
   boxError: { borderColor: colors.accent },
   hiddenInput: { position: 'absolute', opacity: 0, height: 1, width: 1 },
   resendRow: { alignItems: 'center', marginTop: spacing.xl },
-  footer: { position: 'absolute', bottom: spacing.lg, left: spacing.lg, right: spacing.lg },
+  footer: { paddingBottom: spacing.lg },
 });

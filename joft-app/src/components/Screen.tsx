@@ -18,6 +18,8 @@ export function Screen({ children, scroll = true, style, edges = ['top'] }: Prop
         <ScrollView
           contentContainerStyle={[styles.content, style]}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
         >
           {children}
         </ScrollView>
