@@ -61,6 +61,8 @@ export default function RootLayout() {
           <Stack.Screen name="connect" options={{ presentation: 'modal' }} />
           <Stack.Screen name="love" />
           <Stack.Screen name="occasions" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen name="info" />
           <Stack.Screen name="admin" />
           <Stack.Screen name="question/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="game/[id]" options={{ presentation: 'modal' }} />

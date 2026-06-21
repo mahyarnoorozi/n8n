@@ -38,6 +38,12 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "برای انتخاب عکس پروفایل به گالری شما دسترسی می‌خواهیم."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#2B2A4C",

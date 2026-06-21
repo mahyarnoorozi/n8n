@@ -20,9 +20,11 @@ export default function Love() {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [nudgeOn, setNudgeOn] = useState(false);
+  const [linked, setLinked] = useState<boolean | null>(null);
 
   useEffect(() => {
     getSettings().then((s) => setNudgeOn(s.loveNudgeEnabled));
+    api.getMe().then((me) => setLinked(Boolean(me?.couple?.linked)));
   }, []);
 
   async function send(message: string) {
@@ -30,15 +32,15 @@ export default function Love() {
     if (!t) return;
     setSending(true);
     try {
-      if (DEMO_MODE) {
-        // در دمو نشان می‌دهیم پیام چطور به‌صورت اعلان می‌رسد
-        await fireDemoLoveMessage(user?.name || 'تو', t, 4);
+      if (DEMO_MODE || !linked) {
+        // وقتی هنوز به نیمهٔ دیگر وصل نیستی، فقط «پیش‌نمایش» نشان داده می‌شود
+        await fireDemoLoveMessage(t, 4);
       } else {
         await api.sendLove(t);
       }
       setText('');
       setSent(true);
-      setTimeout(() => setSent(false), 2500);
+      setTimeout(() => setSent(false), 3000);
     } finally {
       setSending(false);
     }
@@ -77,9 +79,30 @@ export default function Love() {
         </Txt>
       </Card>
 
+      {/* هشدار اتصال — وقتی هنوز جفت نشده */}
+      {linked === false ? (
+        <Pressable style={styles.connectBanner} onPress={() => router.push('/connect')}>
+          <Ionicons name="link-outline" size={20} color={colors.accent} />
+          <View style={{ flex: 1 }}>
+            <Txt variant="bodyBold" color={colors.accent}>
+              هنوز به نیمهٔ دیگرت وصل نیستی
+            </Txt>
+            <Txt variant="tiny" color={colors.textMuted} style={{ marginTop: 2 }}>
+              برای ارسال واقعی پیام، اول با کد دعوت وصل شو. اینجا فقط پیش‌نمایش می‌بینی.
+            </Txt>
+          </View>
+          <Txt variant="caption" color={colors.accent}>
+            وصل شدن ←
+          </Txt>
+        </Pressable>
+      ) : null}
+
       {/* پیشنهادها */}
-      <Txt variant="caption" style={{ marginTop: spacing.xl, marginBottom: spacing.sm }}>
+      <Txt variant="caption" style={{ marginTop: spacing.xl, marginBottom: spacing.xs }}>
         یکی را انتخاب کن یا خودت بنویس
+      </Txt>
+      <Txt variant="tiny" color={colors.textFaint} style={{ marginBottom: spacing.md }}>
+        با زدن روی هر پیام آماده، همان لحظه فرستاده می‌شود؛ یا در باکس پایین خودت بنویس و بفرست.
       </Txt>
       <View style={styles.chips}>
         {loveSuggestions.map((s) => (
@@ -102,7 +125,7 @@ export default function Love() {
           style={styles.input}
         />
         <Button
-          label={sent ? 'ارسال شد 💌' : 'فرستادن پیام'}
+          label={sent ? 'ارسال شد ✅' : 'فرستادن پیام'}
           icon="paper-plane"
           onPress={() => send(text)}
           loading={sending}
@@ -110,6 +133,12 @@ export default function Love() {
           style={{ marginTop: spacing.md }}
         />
       </Card>
+
+      {sent ? (
+        <Txt variant="caption" center color={colors.success} style={{ marginTop: spacing.md }}>
+          {linked ? 'پیامت برای نیمهٔ دیگرت فرستاده شد 💞' : 'پیش‌نمایش ارسال شد؛ چند لحظه دیگر اعلانش را می‌بینی 💌'}
+        </Txt>
+      ) : null}
 
       {/* یادآوری روزانه */}
       <Pressable onPress={toggleNudge} style={[styles.nudgeCard, nudgeOn && styles.nudgeOn]}>
@@ -145,6 +174,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   hero: { alignItems: 'center', backgroundColor: colors.accentTint, borderColor: colors.accentSoft },
+  connectBanner: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.accentTint,
+    borderWidth: 1,
+    borderColor: colors.accentSoft,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginTop: spacing.lg,
+  },
   heartWrap: {
     width: 64,
     height: 64,

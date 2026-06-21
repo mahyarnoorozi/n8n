@@ -63,12 +63,16 @@ export async function scheduleOccasionReminder(
   }
 }
 
-/** اعلانِ نمایشیِ سریع — برای نشان‌دادن این‌که پیام عاشقانه چطور می‌رسد (حالت دمو). */
-export async function fireDemoLoveMessage(fromName: string, text: string, afterSeconds = 4) {
+/** اعلانِ «پیش‌نمایش» — نشان می‌دهد پیام عاشقانه چطور برای نیمهٔ دیگر می‌رسد (حالت دمو). */
+export async function fireDemoLoveMessage(text: string, afterSeconds = 4) {
   if (!(await ensureNotificationPermission())) return;
   try {
     await Notifications.scheduleNotificationAsync({
-      content: { title: `پیام عاشقانه از ${fromName} 💞`, body: text, sound: 'default' },
+      content: {
+        title: 'پیش‌نمایش 💌 (این‌طوری برای نیمهٔ دیگرت می‌رسد)',
+        body: text,
+        sound: 'default',
+      },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: afterSeconds },
     });
   } catch {

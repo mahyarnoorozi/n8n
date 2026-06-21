@@ -19,6 +19,8 @@ export type User = {
   name?: string;
   partnerName?: string;
   anniversary?: string; // ISO date
+  photo?: string | null; // مسیر عکس پروفایل (محلی)
+  avatarKind?: 'man' | 'woman' | null; // آواتار بی‌چهره وقتی عکسی نیست
   token?: string;
 };
 

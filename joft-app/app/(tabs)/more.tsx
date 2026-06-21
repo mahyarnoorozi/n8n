@@ -16,7 +16,11 @@ export default function More() {
     { icon: 'heart-circle-outline', label: 'صمیمت و پیام عاشقانه', route: '/love' },
     { icon: 'calendar-outline', label: 'مناسبت‌ها و یادآورها', route: '/occasions' },
     { icon: 'link-outline', label: fa.connectFromMore, route: '/connect' },
-    { icon: 'images-outline', label: 'خاطره‌ها', route: '/(tabs)/memories' },
+    { icon: 'person-circle-outline', label: 'حساب کاربری و تنظیمات', route: '/settings' },
+    { icon: 'notifications-outline', label: 'اعلان‌ها و یادآوری‌ها', route: '/settings' },
+    { icon: 'lock-closed-outline', label: 'حریم خصوصی و امنیت', route: '/info?topic=privacy' },
+    { icon: 'help-circle-outline', label: 'پشتیبانی و تماس با ما', route: '/info?topic=support' },
+    { icon: 'information-circle-outline', label: 'دربارهٔ جفت', route: '/info?topic=about' },
     { icon: 'shield-checkmark-outline', label: 'پنل مدیریت', route: '/admin' },
   ];
 
@@ -32,7 +36,13 @@ export default function More() {
       {/* کارت کاربر */}
       <Card style={{ marginTop: spacing.lg }}>
         <View style={styles.userRow}>
-          <Avatar name={user?.name} size={56} />
+          <Avatar
+            name={user?.name}
+            size={56}
+            photoUri={user?.photo}
+            faceless={user?.avatarKind}
+            color={colors.accent}
+          />
           <View style={{ flex: 1 }}>
             <Txt variant="heading">{user?.name ?? ''}</Txt>
             <Txt

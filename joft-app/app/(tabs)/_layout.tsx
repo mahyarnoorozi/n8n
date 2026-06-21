@@ -1,35 +1,57 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Txt } from '@/components';
 import { colors, fonts } from '@/theme';
 import { fa } from '@/i18n/fa';
+
+/**
+ * تب‌بار سفارشیِ راست‌چین: «خانه» (اولین تب) سمت راست قرار می‌گیرد.
+ * چون نسخهٔ جدید react-navigation ردیف آیتم‌ها را با flexDirection ثابت می‌چیند،
+ * برای کنترل قطعیِ ترتیب، خودمان نوار را می‌سازیم.
+ */
+function RtlTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const focused = state.index === index;
+        const color = focused ? colors.accent : colors.textFaint;
+
+        const onPress = () => {
+          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
+        };
+
+        return (
+          <Pressable key={route.key} style={styles.item} onPress={onPress} hitSlop={6}>
+            {options.tabBarIcon?.({ focused, color, size: 24 })}
+            <Txt style={styles.label} color={color}>
+              {typeof options.title === 'string' ? options.title : route.name}
+            </Txt>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textFaint,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: Platform.OS === 'ios' ? 86 : 66,
-          paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
-          // راست‌چین: «خانه» (اولین تب) سمت راست قرار می‌گیرد
-          flexDirection: 'row-reverse',
-        },
-        tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 },
-      }}
+      tabBar={(props) => <RtlTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: fa.tabHome,
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
           ),
         }}
       />
@@ -37,10 +59,10 @@ export default function TabsLayout() {
         name="questions"
         options={{
           title: fa.tabQuestions,
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline'}
-              size={size}
+              size={24}
               color={color}
             />
           ),
@@ -50,10 +72,10 @@ export default function TabsLayout() {
         name="games"
         options={{
           title: fa.tabGames,
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'game-controller' : 'game-controller-outline'}
-              size={size}
+              size={24}
               color={color}
             />
           ),
@@ -63,8 +85,8 @@ export default function TabsLayout() {
         name="memories"
         options={{
           title: fa.tabMemories,
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'images' : 'images-outline'} size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'images' : 'images-outline'} size={24} color={color} />
           ),
         }}
       />
@@ -72,11 +94,23 @@ export default function TabsLayout() {
         name="more"
         options={{
           title: fa.tabMore,
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={24} color={color} />
           ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  bar: {
+    flexDirection: 'row-reverse', // خانه سمت راست
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: 8,
+  },
+  item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3 },
+  label: { fontFamily: fonts.medium, fontSize: 11 },
+});

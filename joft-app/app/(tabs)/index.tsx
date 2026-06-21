@@ -51,14 +51,14 @@ export default function Home() {
           <Txt variant="heading">امروز چه خبر؟</Txt>
         </View>
         <Pressable onPress={() => router.push('/(tabs)/more')}>
-          <Avatar name={user?.name} size={46} />
+          <Avatar name={user?.name} size={46} photoUri={user?.photo} faceless={user?.avatarKind} color={colors.accent} />
         </Pressable>
       </View>
 
       {/* کارت رابطه */}
       <Card style={styles.relCard} padded>
         <View style={styles.relAvatars}>
-          <Avatar name={user?.name} size={56} color={colors.ink} />
+          <Avatar name={user?.name} size={56} color={colors.ink} photoUri={user?.photo} faceless={user?.avatarKind} />
           <View style={styles.heartLink}>
             <Ionicons name="heart" size={20} color={colors.accent} />
           </View>
