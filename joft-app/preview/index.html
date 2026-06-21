@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>پیش‌نمایش اپ جفت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --accent:#EE1844; --accentDark:#C70F35; --accentSoft:#FCE3E8; --accentTint:#FEF1F3;
+    --primary:#2B2A4C; --primaryTint:#EFEEF6; --lavender:#F4F0FA;
+    --bg:#FBF8F6; --surface:#FFFFFF; --surfaceAlt:#F6F3FB;
+    --text:#1E1B2E; --muted:#736F86; --faint:#A6A2B5; --border:#ECE8F1; --success:#2BB673; --star:#F5B301;
+    --catPink:#FCE7EC; --catPeach:#FCEFE3; --catMint:#E4F5EC; --catSky:#E5EEFB; --catLilac:#EEEAFA; --catSand:#F7F0E2;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; font-family:'Vazirmatn',sans-serif;}
+  body{background:#E9E6F0; padding:28px; color:var(--text); -webkit-font-smoothing:antialiased;}
+  h1.page{font-weight:900; font-size:26px; color:var(--primary); margin-bottom:4px; text-align:center;}
+  p.sub{color:var(--muted); text-align:center; margin-bottom:24px; font-size:14px;}
+  .grid{display:flex; flex-wrap:wrap; gap:30px; justify-content:center; align-items:flex-start;}
+  .item{display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .label{font-size:13px; color:var(--primary); font-weight:700;}
+
+  /* قاب گوشی */
+  .phone{width:300px; height:640px; background:var(--bg); border-radius:42px; border:11px solid #15131f;
+    overflow:hidden; position:relative; box-shadow:0 18px 50px rgba(20,16,40,.28);}
+  .notch{position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:26px;
+    background:#15131f; border-bottom-left-radius:16px; border-bottom-right-radius:16px; z-index:30;}
+  .status{display:flex; justify-content:space-between; padding:10px 22px 4px; font-size:12px; font-weight:700; color:var(--text);}
+  .screen{height:100%; overflow:hidden; display:flex; flex-direction:column;}
+  .body{flex:1; overflow:hidden; padding:8px 16px 16px;}
+
+  /* اجزای عمومی */
+  .card{background:var(--surface); border-radius:22px; padding:16px; box-shadow:0 6px 16px rgba(43,42,76,.08); margin-bottom:14px;}
+  .btn{background:var(--accent); color:#fff; border-radius:999px; padding:15px; text-align:center; font-weight:700; font-size:15px;}
+  .btn.ghost{background:transparent; color:var(--primary);}
+  .btn.dark{background:var(--primary);}
+  .tag{display:inline-block; background:var(--accentSoft); color:var(--accentDark); font-size:11px; font-weight:500;
+    padding:4px 12px; border-radius:999px;}
+  .tag.lav{background:var(--lavender); color:var(--primary);}
+  .row{display:flex; align-items:center; gap:10px;}
+  .between{display:flex; align-items:center; justify-content:space-between;}
+  .av{width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:19px; background:var(--primary);}
+  .av.red{background:var(--accent);} .av.sm{width:36px;height:36px;font-size:15px;}
+  .muted{color:var(--muted);} .faint{color:var(--faint);} .small{font-size:12px;} .tiny{font-size:11px;}
+  .b{font-weight:700;} .center{text-align:center;}
+  .heart{color:var(--accent);}
+
+  /* تب‌بار */
+  .tabs{display:flex; justify-content:space-around; padding:10px 8px 18px; background:#fff; border-top:1px solid var(--border);}
+  .tab{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; color:var(--faint); flex:1;}
+  .tab.active{color:var(--accent);}
+  .ic{width:22px; height:22px; display:block;}
+
+  /* خاص */
+  .relcard{background:#fff; border-radius:22px; padding:18px; text-align:center; box-shadow:0 6px 16px rgba(43,42,76,.08); margin-bottom:14px;}
+  .bignum{font-size:34px; font-weight:900; color:var(--accent); line-height:1.1;}
+  .catgrid{display:flex; flex-wrap:wrap; gap:12px;}
+  .cat{width:calc(50% - 6px); border-radius:18px; padding:14px;}
+  .cat .t{font-weight:700; font-size:13px; margin-top:8px;} .cat .s{font-size:10px; color:var(--muted);}
+  .otp{display:flex; gap:10px; justify-content:space-between; margin:26px 0 10px; direction:ltr;}
+  .otpbox{flex:1; height:58px; border:1.5px solid var(--border); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700;}
+  .otpbox.f{border-color:var(--primary);}
+  .input{background:#fff; border:1.5px solid var(--border); border-radius:14px; padding:15px; color:var(--faint); font-size:14px;}
+  .sec-h{font-weight:700; font-size:17px; margin:18px 0 10px;}
+  .seeall{color:var(--accent); font-size:12px; font-weight:500;}
+  .events{display:flex; gap:10px; overflow:hidden;}
+  .ev{min-width:118px; background:#fff; border-radius:18px; padding:12px; box-shadow:0 6px 16px rgba(43,42,76,.08);}
+  .evdate{width:48px; height:52px; border-radius:10px; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .gtop{height:96px; border-radius:18px 18px 0 0; display:flex; align-items:center; justify-content:center; font-size:40px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--border);}
+  .dot.a{width:22px;background:var(--accent);}
+  .listitem{display:flex; align-items:center; gap:12px; padding:14px 4px; border-top:1px solid var(--border);}
+  .listitem:first-child{border-top:none;}
+  .premium{display:flex; align-items:center; gap:12px; background:var(--accent); border-radius:18px; padding:16px; color:#fff; margin-bottom:14px;}
+  .pill-white{background:#fff; color:var(--accent); border-radius:999px; padding:7px 14px; font-size:11px; font-weight:700;}
+  .progress{height:8px; border-radius:999px; background:var(--border); overflow:hidden;}
+  .progress > i{display:block; height:8px; width:66%; background:var(--accent);}
+  .opt{display:flex; align-items:center; gap:12px; border:1.5px solid var(--border); border-radius:14px; padding:14px; margin-bottom:10px;}
+  .opt.a{border-color:var(--accent); background:var(--accentTint);}
+  .radio{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--faint);}
+  .radio.a{background:var(--accent); border-color:var(--accent);}
+  .bubble{background:var(--accentTint); border-radius:14px; padding:14px;}
+  svg{display:block;}
+</style>
+</head>
+<body>
+  <h1 class="page">پیش‌نمایش اپلیکیشن «جفت» 💞</h1>
+  <p class="sub">رنگ قالب نیلی تیره، قرمز برند فقط به‌عنوان اکسنت — فارسی و راست‌به‌چپ</p>
+  <div class="grid">
+
+    <!-- ۱) آنبوردینگ -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="width:170px;height:170px;border-radius:50%;background:var(--accentTint);display:flex;align-items:center;justify-content:center;">
+          <svg width="92" height="92" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.5 5c2 0 3.4 1.2 4.5 2.6C11.1 6.2 12.5 5 14.5 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z"/></svg>
+        </div>
+        <h2 style="font-weight:900;font-size:23px;margin-top:30px;">هر روز کمی نزدیک‌تر</h2>
+        <p class="muted" style="margin-top:8px;font-size:14px;line-height:1.9;">با سؤال‌های روزانه و گفت‌وگوهای معنادار، رابطه‌تان را گرم‌تر کنید.</p>
+        <div class="row" style="margin-top:24px;"><span class="dot a"></span><span class="dot"></span><span class="dot"></span></div>
+        <div style="width:100%;margin-top:auto;"><div class="btn">بزن بریم</div><div class="btn ghost" style="margin-top:6px;">قبلاً حساب ساخته‌ام</div></div>
+      </div>
+    </div></div><span class="label">۱· آنبوردینگ</span></div>
+
+    <!-- ۲) ورود با شماره -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body">
+        <div style="font-size:24px;color:var(--text);">‹</div>
+        <div style="width:68px;height:68px;border-radius:22px;background:var(--accentTint);display:flex;align-items:center;justify-content:center;margin-top:14px;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.5 5c2 0 3.4 1.2 4.5 2.6C11.1 6.2 12.5 5 14.5 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z"/></svg>
+        </div>
+        <h2 style="font-weight:700;font-size:23px;margin-top:22px;">ورود یا ثبت‌نام</h2>
+        <p class="muted" style="margin-top:8px;font-size:14px;line-height:1.9;">شمارهٔ موبایلت را وارد کن تا کد تأیید برایت بفرستیم.</p>
+        <p class="small muted" style="margin:26px 0 8px;">شمارهٔ موبایل</p>
+        <div style="display:flex;align-items:center;background:#fff;border:1.5px solid var(--border);border-radius:14px;height:56px;padding:0 16px;">
+          <span class="b" style="font-size:17px;letter-spacing:2px;flex:1;">۰۹۱۲ ۳۴۵ ۶۷۸۹</span>
+          <span class="muted b" style="border-right:1px solid var(--border);padding-right:12px;margin-right:12px;">۹۸+</span>
+        </div>
+        <div style="margin-top:auto;"><p class="tiny faint center" style="margin-bottom:12px;">با ادامه، قوانین و حریم خصوصی «جفت» را می‌پذیری.</p><div class="btn">دریافت کد تأیید</div></div>
+      </div>
+    </div></div><span class="label">۲· ورود با شماره</span></div>
+
+    <!-- ۳) کد تأیید -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body">
+        <div style="font-size:24px;">‹</div>
+        <h2 style="font-weight:700;font-size:23px;margin-top:18px;">کد تأیید را وارد کن</h2>
+        <p class="muted" style="margin-top:8px;font-size:14px;line-height:1.9;">کد چهاررقمی پیامک‌شده به شمارهٔ زیر را وارد کن:</p>
+        <p class="b" style="color:var(--primary);margin-top:4px;">۹۸+ ۰۹۱۲ ۳۴۵ ۶۷۸۹</p>
+        <div class="otp"><div class="otpbox f">۱</div><div class="otpbox f">۲</div><div class="otpbox f">۳</div><div class="otpbox">_</div></div>
+        <p class="tiny faint center" style="margin-top:8px;">کد نمایشی: ۱۲۳۴</p>
+        <p class="small muted center" style="margin-top:22px;">ارسال دوباره تا ۴۸ ثانیه</p>
+        <div style="margin-top:auto;"><div class="btn">تأیید و ورود</div></div>
+      </div>
+    </div></div><span class="label">۳· کد تأیید پیامکی</span></div>
+
+    <!-- ۴) خانه -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body" style="overflow:hidden;">
+        <div class="between" style="margin-bottom:14px;">
+          <div><p class="small muted">سلام سارا 👋</p><p class="b" style="font-size:18px;">امروز چه خبر؟</p></div>
+          <div class="av">س</div>
+        </div>
+        <div class="relcard">
+          <div class="row" style="justify-content:center;">
+            <div class="av">س</div><span class="heart" style="font-size:20px;">♥</span><div class="av red">ع</div>
+          </div>
+          <p class="small muted" style="margin-top:10px;">با همیم به مدت</p>
+          <p class="bignum">۴۸۲ <span style="font-size:17px;color:var(--text);">روز</span></p>
+        </div>
+        <div class="between"><span class="sec-h">سؤال امروز</span></div>
+        <div class="card" style="margin-bottom:14px;">
+          <span class="tag">عشق و علاقه</span>
+          <p style="font-weight:500;margin:10px 0 12px;line-height:1.8;">اولین چیزی که در من توجهت را جلب کرد چه بود؟</p>
+          <span class="seeall">‹ همین حالا جواب بده</span>
+        </div>
+        <div class="between"><span class="sec-h">مناسبت‌های خاص</span></div>
+        <div class="events">
+          <div class="ev"><div class="evdate" style="background:var(--accent);"><span class="b">۲۱</span><span class="tiny">خرداد</span></div><p class="small" style="margin-top:8px;">سالگرد آشنایی</p></div>
+          <div class="ev"><div class="evdate" style="background:var(--primary);"><span class="b">۱۲</span><span class="tiny">تیر</span></div><p class="small" style="margin-top:8px;">تولد علی</p></div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10v10h6v-6h6v6h6V10z"/></svg>خانه</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>سؤال روز</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8h10a4 4 0 0 1 0 8H7a4 4 0 0 1 0-8z"/></svg>بازی‌ها</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v12H4z" opacity=".4"/><circle cx="9" cy="11" r="2"/></svg>خاطره‌ها</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>بیشتر</div>
+      </div>
+    </div></div><span class="label">۴· خانه (داشبورد)</span></div>
+
+    <!-- ۵) سؤال روز -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body">
+        <div class="between"><span style="font-size:24px;">✕</span><span class="tag lav">عشق و علاقه</span><span style="width:24px;"></span></div>
+        <div class="center" style="margin-top:18px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--accent)" style="margin:0 auto;"><path d="M4 4h16v12H7l-3 3z"/></svg>
+          <h2 style="font-weight:700;font-size:21px;margin-top:12px;line-height:1.7;">اولین چیزی که در من توجهت را جلب کرد چه بود؟</h2>
+        </div>
+        <p class="small muted" style="margin:22px 0 8px;">پاسخ تو</p>
+        <div class="card">
+          <div class="row"><div class="av sm">س</div><span class="b">سارا</span><span class="tiny" style="color:var(--success);margin-right:auto;">ثبت شد ✅</span></div>
+          <p style="margin-top:8px;line-height:1.8;">آرامش نگاهت و این‌که با حوصله گوش می‌دادی.</p>
+        </div>
+        <p class="small muted" style="margin:18px 0 8px;">پاسخ نیمهٔ دیگرت</p>
+        <div class="bubble">
+          <div class="row"><div class="av sm red">ع</div><span class="b">علی</span></div>
+          <p style="margin-top:8px;line-height:1.8;">حس می‌کردم دیده می‌شم؛ این برام مهم‌ترین بود 💛</p>
+        </div>
+      </div>
+    </div></div><span class="label">۵· جزئیات سؤال</span></div>
+
+    <!-- ۶) بازی‌ها -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body" style="overflow:hidden;">
+        <h2 style="font-weight:700;font-size:22px;">بازی‌ها و کوییزها</h2>
+        <p class="muted small" style="margin-top:4px;">با هم بازی کنید، بخندید و بیشتر همدیگر را بشناسید.</p>
+        <div class="card" style="padding:0;overflow:hidden;margin-top:14px;">
+          <div class="gtop" style="background:var(--catPeach);">😊</div>
+          <div style="padding:14px;"><div class="between"><span class="b">چقدر همدیگر را می‌شناسیم؟</span><span class="tag">۵ دقیقه</span></div>
+          <p class="small muted" style="margin-top:6px;">حدس بزن پاسخِ نیمهٔ دیگرت چیست</p></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="gtop" style="background:var(--catSky);">✈️</div>
+          <div style="padding:14px;"><div class="between"><span class="b">رابطهٔ از راه دور</span><span class="tag">۷ دقیقه</span></div>
+          <p class="small muted" style="margin-top:6px;">نزدیک ماندن وقتی دور از هم هستید</p></div>
+        </div>
+        <div class="sec-h">بخوان و یاد بگیر</div>
+        <div style="background:var(--catPink);border-radius:18px;padding:14px;">
+          <span class="tag lav" style="background:#fff;">گفت‌وگو</span>
+          <p class="b" style="margin-top:8px;line-height:1.7;">هنر «جملهٔ من»: حرف دلت را بدون دعوا بزن</p>
+          <p class="tiny muted" style="margin-top:6px;">۴ دقیقه مطالعه</p>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10v10h6v-6h6v6h6V10z"/></svg>خانه</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>سؤال روز</div>
+        <div class="tab active"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8h10a4 4 0 0 1 0 8H7a4 4 0 0 1 0-8z"/></svg>بازی‌ها</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v12H4z" opacity=".4"/><circle cx="9" cy="11" r="2"/></svg>خاطره‌ها</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>بیشتر</div>
+      </div>
+    </div></div><span class="label">۶· بازی‌ها و مقاله‌ها</span></div>
+
+    <!-- ۷) کوییز -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body">
+        <div class="between"><span style="font-size:22px;">✕</span><span class="b">چقدر همدیگر را می‌شناسیم؟</span><span style="width:22px;"></span></div>
+        <div class="progress" style="margin-top:18px;"><i></i></div>
+        <p class="small muted" style="margin-top:8px;">سؤال ۲ از ۳</p>
+        <h2 style="font-weight:700;font-size:20px;margin-top:22px;line-height:1.7;">در یک روز تعطیل، شریک زندگی‌ات کدام را بیشتر دوست دارد؟</h2>
+        <div style="margin-top:22px;">
+          <div class="opt a"><span class="radio a"></span><span class="b" style="color:var(--accentDark);">گردش در طبیعت</span></div>
+          <div class="opt"><span class="radio"></span><span>ماندن در خانه و فیلم دیدن</span></div>
+          <div class="opt"><span class="radio"></span><span>دیدن دوستان و خانواده</span></div>
+        </div>
+        <div style="margin-top:auto;"><div class="btn">بعدی</div></div>
+      </div>
+    </div></div><span class="label">۷· کوییز دونفره</span></div>
+
+    <!-- ۸) خاطره‌ها -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body" style="overflow:hidden;">
+        <h2 style="font-weight:700;font-size:22px;">خاطره‌های ما</h2>
+        <p class="muted small" style="margin-top:4px;">لحظه‌های قشنگتان را ثبت کنید تا همیشه بماند.</p>
+        <div class="card" style="margin-top:14px;">
+          <p class="faint">یک خاطرهٔ قشنگ بنویس...</p>
+          <div style="display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:8px 16px;font-size:12px;margin-top:12px;">＋ افزودن خاطره</div>
+        </div>
+        <div class="card">
+          <div class="row"><div class="av sm red">ع</div><div><p class="b small">علی</p><p class="tiny faint">۱۸ خرداد ۱۴۰۵</p></div><span class="heart" style="margin-right:auto;">♡</span></div>
+          <p style="margin-top:8px;line-height:1.8;">یادمه اولین باری که رفتیم کافه، تا صبح حرف زدیم ☕️</p>
+        </div>
+        <div class="card">
+          <div class="row"><div class="av sm">س</div><div><p class="b small">سارا</p><p class="tiny faint">۱۱ خرداد ۱۴۰۵</p></div></div>
+          <p style="margin-top:8px;line-height:1.8;">سفر شمالمون بهترین خاطرهٔ امساله 🌲</p>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10v10h6v-6h6v6h6V10z"/></svg>خانه</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>سؤال روز</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8h10a4 4 0 0 1 0 8H7a4 4 0 0 1 0-8z"/></svg>بازی‌ها</div>
+        <div class="tab active"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v12H4z" opacity=".4"/><circle cx="9" cy="11" r="2"/></svg>خاطره‌ها</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>بیشتر</div>
+      </div>
+    </div></div><span class="label">۸· خاطره‌ها</span></div>
+
+    <!-- ۹) بیشتر -->
+    <div class="item"><div class="phone"><div class="notch"></div><div class="screen">
+      <div class="status"><span>۲۲:۰۸</span><span>۴۹٪ 📶</span></div>
+      <div class="body" style="overflow:hidden;">
+        <h2 style="font-weight:700;font-size:22px;">بیشتر</h2>
+        <div class="card" style="margin-top:14px;"><div class="row"><div class="av">س</div><div><p class="b">سارا</p><p class="small muted">۹۸+ ۰۹۱۲ ۳۴۵ ۶۷۸۹</p></div></div></div>
+        <div class="premium"><div style="flex:1;"><p class="b">✨ نسخهٔ ویژه</p><p class="tiny" style="opacity:.85;margin-top:4px;">دسترسی کامل به همهٔ سؤال‌ها و بازی‌ها</p></div><span class="pill-white">ارتقا</span></div>
+        <div class="card" style="padding:0;">
+          <div class="listitem"><span>👤</span><span style="flex:1;">حساب کاربری</span><span class="faint">‹</span></div>
+          <div class="listitem"><span>❤️</span><span style="flex:1;">نیمهٔ دیگر</span><span class="faint">‹</span></div>
+          <div class="listitem"><span>🔔</span><span style="flex:1;">اعلان‌ها</span><span class="faint">‹</span></div>
+          <div class="listitem"><span>🔒</span><span style="flex:1;">حریم خصوصی</span><span class="faint">‹</span></div>
+        </div>
+        <div class="center" style="color:var(--accent);font-weight:700;margin-top:8px;">⎋ خروج از حساب</div>
+      </div>
+      <div class="tabs">
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 3 10v10h6v-6h6v6h6V10z"/></svg>خانه</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16v12H7l-3 3z"/></svg>سؤال روز</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M7 8h10a4 4 0 0 1 0 8H7a4 4 0 0 1 0-8z"/></svg>بازی‌ها</div>
+        <div class="tab"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v12H4z" opacity=".4"/><circle cx="9" cy="11" r="2"/></svg>خاطره‌ها</div>
+        <div class="tab active"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>بیشتر</div>
+      </div>
+    </div></div><span class="label">۹· بیشتر / تنظیمات</span></div>
+
+  </div>
+</body>
+</html>
