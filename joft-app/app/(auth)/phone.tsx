@@ -71,7 +71,11 @@ export default function PhoneScreen() {
           </Txt>
           <View style={[styles.inputWrap, error ? styles.inputError : null]}>
             <View style={styles.prefix}>
-              <Txt variant="bodyBold" color={colors.textMuted}>
+              <Txt
+                variant="bodyBold"
+                color={colors.textMuted}
+                style={{ writingDirection: 'ltr', textAlign: 'left' }}
+              >
                 +۹۸
               </Txt>
             </View>

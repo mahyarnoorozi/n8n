@@ -37,8 +37,12 @@ export default function More() {
           <Avatar name={user?.name} size={56} />
           <View style={{ flex: 1 }}>
             <Txt variant="heading">{user?.name ?? ''}</Txt>
-            <Txt variant="caption" color={colors.textMuted}>
-              {user?.phone ? `‎+۹۸ ${formatIranPhone(user.phone)}` : ''}
+            <Txt
+              variant="caption"
+              color={colors.textMuted}
+              style={{ writingDirection: 'ltr', textAlign: 'right' }}
+            >
+              {user?.phone ? `+۹۸ ${formatIranPhone(user.phone)}` : ''}
             </Txt>
           </View>
         </View>

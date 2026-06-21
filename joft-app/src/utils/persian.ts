@@ -12,15 +12,33 @@ export function toEn(input: string): string {
     .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
 }
 
-/** قالب‌بندی شمارهٔ موبایل ایران مثل ۰۹۱۲ ۳۴۵ ۶۷۸۹ */
+/**
+ * بخش محلی شمارهٔ موبایل ایران را برمی‌گرداند: ۱۰ رقم بدون صفر/کد کشور.
+ * چون در رابط کاربری «+۹۸» جدا نمایش داده می‌شود، شماره بدون صفر ابتدایی است
+ * (مثل ۹۱۲۳۴۵۶۷۸۹). ورودی با ۰ ابتدایی یا ۹۸/۰۰۹۸ هم پذیرفته و نرمال می‌شود.
+ */
+function localPart(raw: string): string {
+  let d = toEn(raw).replace(/\D/g, '');
+  if (d.startsWith('0098')) d = d.slice(4);
+  if (d.startsWith('98') && d.length >= 12) d = d.slice(2);
+  if (d.startsWith('0')) d = d.slice(1);
+  return d.slice(0, 10);
+}
+
+/** قالب‌بندی بین‌المللی استاندارد: «۹۱۲ ۳۴۵ ۶۷۸۹» (۳-۳-۴) برای نمایش کنار +۹۸ */
 export function formatIranPhone(raw: string): string {
-  const digits = toEn(raw).replace(/\D/g, '').slice(0, 11);
-  const parts = [digits.slice(0, 4), digits.slice(4, 7), digits.slice(7, 11)].filter(Boolean);
+  const d = localPart(raw);
+  const parts = [d.slice(0, 3), d.slice(3, 6), d.slice(6, 10)].filter(Boolean);
   return toFa(parts.join(' '));
 }
 
-/** بررسی معتبر بودن شمارهٔ موبایل ایران (۰۹xxxxxxxxx) */
+/** معتبر است اگر بخش محلی ۱۰ رقم و با ۹ شروع شود. */
 export function isValidIranPhone(raw: string): boolean {
-  const digits = toEn(raw).replace(/\D/g, '');
-  return /^09\d{9}$/.test(digits);
+  return /^9\d{9}$/.test(localPart(raw));
+}
+
+/** نسخهٔ یکدست برای ذخیره/ارسال به سرور: «۰۹xxxxxxxxx». اگر نامعتبر بود خالی. */
+export function normalizeIranPhone(raw: string): string {
+  const d = localPart(raw);
+  return /^9\d{9}$/.test(d) ? '0' + d : '';
 }

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { requestOtp, verifyOtp } from '@/api/auth';
 import { api, loadToken, setToken } from '@/api/client';
-import { toEn } from '@/utils/persian';
+import { toEn, normalizeIranPhone } from '@/utils/persian';
 
 /**
  * مدیریت احراز هویت با شمارهٔ موبایل.
@@ -62,7 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /** ارسال کد؛ در صورت خطا (مثل محدودیت نرخ) پیام فارسی throw می‌شود. */
   async function sendCode(phone: string) {
-    const normalized = toEn(phone).replace(/\D/g, '');
+    // به فرمت یکدست «۰۹xxxxxxxxx» تبدیل می‌شود (سرور همین را می‌خواهد)
+    const normalized = normalizeIranPhone(phone) || toEn(phone).replace(/\D/g, '');
     setPendingPhone(normalized);
     await requestOtp(normalized); // در صورت خطا، پیام را به صفحه می‌رساند
   }

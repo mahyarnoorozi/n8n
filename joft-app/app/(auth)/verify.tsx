@@ -78,8 +78,12 @@ export default function VerifyScreen() {
       <Txt variant="body" color={colors.textMuted} style={{ marginTop: spacing.sm }}>
         {fa.verifySubtitle}
       </Txt>
-      <Txt variant="bodyBold" color={colors.primary} style={{ marginTop: spacing.xs }}>
-        ‎+۹۸ {pendingPhone ? formatIranPhone(pendingPhone) : ''}
+      <Txt
+        variant="bodyBold"
+        color={colors.primary}
+        style={{ marginTop: spacing.xs, writingDirection: 'ltr', textAlign: 'right' }}
+      >
+        +۹۸ {pendingPhone ? formatIranPhone(pendingPhone) : ''}
       </Txt>
 
       {/* خانه‌های نمایشی کد؛ ورودی واقعی پشت آن‌ها مخفی است */}
@@ -152,7 +156,8 @@ export default function VerifyScreen() {
 const styles = StyleSheet.create({
   back: { alignSelf: 'flex-start' },
   boxes: {
-    flexDirection: 'row-reverse',
+    // کد تأیید عددی است و باید چپ‌به‌راست خوانده شود (رقم اول سمت چپ)
+    flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.md,
     marginTop: spacing.xxl,
