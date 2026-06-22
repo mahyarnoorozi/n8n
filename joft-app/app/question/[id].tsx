@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Avatar, Button, Card, Screen, Skeleton, Tag, Txt } from '@/components';
 import { api, type AnswerView } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
-import { dailyQuestions } from '@/data/content';
+import { dailyQuestions, CATEGORY_INTENT } from '@/data/content';
 import { fa } from '@/i18n/fa';
 import { colors, fonts, spacing } from '@/theme';
 
@@ -64,6 +64,18 @@ export default function QuestionDetail() {
           خصوصی بین شما دو نفر — تا وقتی هر دو جواب بدید، نمایان نمی‌شه.
         </Txt>
       </View>
+
+      {CATEGORY_INTENT[question.category] ? (
+        <View style={styles.whyCard}>
+          <Ionicons name="bulb-outline" size={16} color={colors.accent} />
+          <View style={{ flex: 1 }}>
+            <Txt variant="tiny" color={colors.accent}>چرا این سؤال؟</Txt>
+            <Txt variant="caption" color={colors.ink} style={{ marginTop: 2 }}>
+              {CATEGORY_INTENT[question.category]}
+            </Txt>
+          </View>
+        </View>
+      ) : null}
 
       {loading ? (
         <View style={{ marginTop: spacing.xl, gap: spacing.lg }}>
@@ -154,6 +166,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
+  },
+  whyCard: {
+    flexDirection: 'row-reverse',
+    gap: spacing.sm,
+    backgroundColor: colors.accentTint,
+    borderRadius: 16,
+    padding: spacing.md,
+    marginTop: spacing.lg,
   },
   hero: { alignItems: 'center', paddingHorizontal: spacing.md, marginTop: spacing.lg },
   heroIcon: {

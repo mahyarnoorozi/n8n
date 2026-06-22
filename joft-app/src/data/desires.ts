@@ -82,6 +82,24 @@ const SOFT_CARDS: Omit<DesireCard, 'level'>[] = [
   { id: 's-t5', category: 'touch', title: 'هر روز یه بوسهٔ صبح و یه بوسهٔ شب.' },
   { id: 's-t6', category: 'touch', title: 'دست‌هاش رو با کِرِم گرم ماساژ بدم.' },
   { id: 's-t7', category: 'touch', title: 'وقتی خوابش می‌بره، آروم پیشونی‌اش رو ببوسم.' },
+
+  // نزدیکی عاطفی (ادامه)
+  { id: 's-c8', category: 'connection', title: 'یه شب خاطره‌های اولِ آشناییمون رو با هم مرور کنیم.' },
+  { id: 's-c9', category: 'connection', title: 'هر کدوم یه ترسِ پنهانمون رو با هم در میون بذاریم.' },
+  { id: 's-c10', category: 'connection', title: 'یه «قرارِ بدونِ موبایل» بذاریم.' },
+
+  // روزمره (ادامه)
+  { id: 's-d8', category: 'daily', title: 'هر روز یه چیزِ خوب که طرف کرده رو بهش بگیم.' },
+  { id: 's-d9', category: 'daily', title: 'با هم یه لیستِ کارهای دونفره برای این ماه بنویسیم.' },
+  { id: 's-d10', category: 'daily', title: 'صبح‌ها با هم بیدار شیم و چند دقیقه کنار هم بمونیم.' },
+
+  // ماجراجویی (ادامه)
+  { id: 's-a7', category: 'adventure', title: 'یه رستورانِ تازه که تا حالا نرفتیم رو امتحان کنیم.' },
+  { id: 's-a8', category: 'adventure', title: 'یه پروژهٔ کوچیکِ مشترک شروع کنیم (گلدون، آلبوم، …).' },
+
+  // لمس و نزدیکی (ادامه)
+  { id: 's-t8', category: 'touch', title: 'موقعِ راه‌رفتن دستش رو بگیرم.' },
+  { id: 's-t9', category: 'touch', title: 'یه «بغلِ خداحافظیِ» طولانی‌تر از همیشه.' },
 ];
 
 /**
@@ -104,6 +122,11 @@ const SPICY_CARDS: Omit<DesireCard, 'level'>[] = [
   { id: 'p-i13', category: 'intimacy', title: 'با هم یه «شب‌نشینیِ خصوصی» تو خونه ترتیب بدیم.' },
   { id: 'p-i14', category: 'intimacy', title: 'برام تعریف کنی چه چیزی از من خاطره‌انگیزه برات.' },
   { id: 'p-i15', category: 'intimacy', title: 'یه شب فقط ما؛ بچه‌ها/کارها رو فراموش کنیم.' },
+  { id: 'p-i16', category: 'intimacy', title: 'یه شامِ دونفره با لباسِ شیک، توی خونهٔ خودمون.' },
+  { id: 'p-i17', category: 'intimacy', title: 'یه فهرستِ مشترک از چیزهایی که دوست داریم امتحان کنیم بسازیم.' },
+  { id: 'p-i18', category: 'intimacy', title: 'یه ماساژِ آرامش‌بخش بدونِ عجله، فقط برای لذتِ تو.' },
+  { id: 'p-i19', category: 'intimacy', title: 'یه شب همه‌چی رو کنار بذاریم و فقط به هم برسیم.' },
+  { id: 'p-i20', category: 'intimacy', title: 'برات بنویسم دقیقاً چه لحظه‌هایی کنارت بهم آرامش می‌ده.' },
 ];
 
 export const DESIRE_CARDS: DesireCard[] = [
