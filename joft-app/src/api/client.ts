@@ -42,7 +42,13 @@ export type Me = {
   partner: PublicUser | null;
   couple: { id: string; inviteCode: string; linked: boolean } | null;
 };
-export type Memory = { id: string; text: string; createdAt: string; author: 'me' | 'partner' };
+export type Memory = {
+  id: string;
+  text: string;
+  createdAt: string;
+  author: 'me' | 'partner';
+  photoUri?: string | null; // مسیر محلیِ عکس روی همین گوشی (همگام‌سازی نمی‌شود)
+};
 export type AnswerView = {
   mine: { text: string } | null;
   partner: { text: string } | null;
@@ -112,15 +118,32 @@ export const api = {
     return j.memories;
   },
 
-  async addMemory(text: string): Promise<Memory> {
+  async addMemory(text: string, photoUri?: string | null): Promise<Memory> {
     if (DEMO_MODE) {
       const list = await demo.get<Memory[]>('@joft/memories', []);
-      const m: Memory = { id: String(Date.now()), text, createdAt: new Date().toISOString(), author: 'me' };
+      const m: Memory = {
+        id: String(Date.now()),
+        text,
+        createdAt: new Date().toISOString(),
+        author: 'me',
+        photoUri: photoUri ?? null,
+      };
       await demo.set('@joft/memories', [m, ...list]);
       return m;
     }
     const j = await req('POST', '/api/memories', { text });
-    return j.memory;
+    // عکس فقط روی همین گوشی نگهداری می‌شود؛ مسیر محلی را به Memory بازگشتی ضمیمه می‌کنیم
+    const photos = await demo.get<Record<string, string>>('@joft/memoryPhotos', {});
+    if (photoUri) {
+      photos[j.memory.id] = photoUri;
+      await demo.set('@joft/memoryPhotos', photos);
+    }
+    return { ...j.memory, photoUri: photoUri ?? null };
+  },
+
+  /** مسیرهای عکسِ خاطره‌ها روی همین گوشی (همگام نمی‌شوند). */
+  async getMemoryPhotoMap(): Promise<Record<string, string>> {
+    return demo.get<Record<string, string>>('@joft/memoryPhotos', {});
   },
 
   async sendLove(text: string) {

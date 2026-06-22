@@ -22,7 +22,7 @@ export default function ProfileSetup() {
       anniversary: (anniversary ?? new Date()).toISOString(),
     });
     setLoading(false);
-    router.replace('/(tabs)');
+    router.replace('/welcome');
   }
 
   return (
