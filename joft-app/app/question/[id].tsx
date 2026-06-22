@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Avatar, Button, Card, Screen, Tag, Txt } from '@/components';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Avatar, Button, Card, Screen, Skeleton, Tag, Txt } from '@/components';
 import { api, type AnswerView } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
 import { dailyQuestions } from '@/data/content';
@@ -66,7 +66,18 @@ export default function QuestionDetail() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
+        <View style={{ marginTop: spacing.xl, gap: spacing.lg }}>
+          <Skeleton width="40%" height={14} />
+          <Card>
+            <Skeleton width="50%" height={12} />
+            <Skeleton height={48} radius={12} style={{ marginTop: spacing.md }} />
+          </Card>
+          <Skeleton width="40%" height={14} style={{ marginTop: spacing.md }} />
+          <Card>
+            <Skeleton width="60%" height={12} />
+            <Skeleton height={36} radius={12} style={{ marginTop: spacing.md }} />
+          </Card>
+        </View>
       ) : (
         <>
           {/* پاسخ کاربر */}

@@ -7,3 +7,4 @@ export { IconChip } from './IconChip';
 export { JalaliDatePicker } from './JalaliDatePicker';
 export { Tag } from './Tag';
 export { SectionHeader } from './SectionHeader';
+export { Skeleton, SkeletonCard, SkeletonList } from './Skeleton';

@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Avatar, Button, Card, Screen, Txt } from '@/components';
+import { Avatar, Button, Card, Screen, SkeletonList, Txt } from '@/components';
 import { api, type Memory } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
 import { fa } from '@/i18n/fa';
@@ -185,7 +185,7 @@ export default function Memories() {
 
       {/* محتوا */}
       {loading ? (
-        <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
+        <SkeletonList count={3} />
       ) : memories.length === 0 ? (
         <EmptyState onPickSeed={(s) => { setText(s); setComposerOpen(true); }} />
       ) : (

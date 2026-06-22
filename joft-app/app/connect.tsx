@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Button, Card, Screen, Txt } from '@/components';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Button, Card, Screen, Skeleton, Txt } from '@/components';
 import { api } from '@/api/client';
 import { DEMO_MODE } from '@/config';
 import { useAuth } from '@/context/AuthContext';
@@ -98,7 +98,14 @@ export default function Connect() {
           />
         </Card>
       ) : loading ? (
-        <ActivityIndicator color={colors.accent} style={{ marginTop: spacing.xxl }} />
+        <View style={{ marginTop: spacing.xl, gap: spacing.lg }}>
+          <Skeleton width="35%" height={13} />
+          <Card style={{ alignItems: 'center', gap: spacing.md }}>
+            <Skeleton width="60%" height={40} radius={12} />
+            <Skeleton width="80%" height={11} />
+            <Skeleton width={120} height={32} radius={999} />
+          </Card>
+        </View>
       ) : (
         <>
           {/* کد دعوت من */}
