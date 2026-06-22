@@ -21,8 +21,7 @@ export default function More() {
     { icon: 'notifications-outline', label: 'اعلان‌ها و یادآوری‌ها', route: '/settings' },
     { icon: 'lock-closed-outline', label: 'حریم خصوصی و امنیت', route: '/info?topic=privacy' },
     { icon: 'help-circle-outline', label: 'پشتیبانی و تماس با ما', route: '/info?topic=support' },
-    { icon: 'information-circle-outline', label: 'دربارهٔ جفت', route: '/info?topic=about' },
-    { icon: 'shield-checkmark-outline', label: 'پنل مدیریت', route: '/admin' },
+    { icon: 'information-circle-outline', label: 'دربارهٔ جفتیما', route: '/info?topic=about' },
   ];
 
   async function handleLogout() {

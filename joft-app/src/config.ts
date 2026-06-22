@@ -13,10 +13,3 @@ export const API_BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/+
 export const DEMO_MODE = API_BASE_URL.length === 0;
 
 export const DEMO_CODE = '1234';
-
-/**
- * کد دسترسیِ پنل مدیریتِ داخل اپ. برای امنیت بیشتر آن را در فایل `.env` تنظیم کن:
- *   EXPO_PUBLIC_ADMIN_CODE=یک‌کد‌دلخواه
- * اگر تنظیم نشده باشد، مقدار پیش‌فرض زیر استفاده می‌شود.
- */
-export const ADMIN_CODE = process.env.EXPO_PUBLIC_ADMIN_CODE ?? '110110';

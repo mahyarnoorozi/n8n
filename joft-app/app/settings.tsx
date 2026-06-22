@@ -72,7 +72,7 @@ export default function Settings() {
     { icon: 'language-outline', label: 'زبان', topic: 'language' },
     { icon: 'lock-closed-outline', label: 'حریم خصوصی و امنیت', topic: 'privacy' },
     { icon: 'help-circle-outline', label: 'پشتیبانی و تماس با ما', topic: 'support' },
-    { icon: 'information-circle-outline', label: 'دربارهٔ جفت', topic: 'about' },
+    { icon: 'information-circle-outline', label: 'دربارهٔ جفتیما', topic: 'about' },
   ];
 
   return (
