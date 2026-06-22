@@ -16,7 +16,12 @@ import { toFa } from '@/utils/persian';
 export default function Home() {
   const router = useRouter();
   const { user } = useAuth();
-  const today = dailyQuestions[new Date().getDay() % dailyQuestions.length];
+  // سؤال روز بر اساس روزِ سال انتخاب می‌شود تا با تب «سؤال روز» یکی باشد
+  const _now = new Date();
+  const _doy = Math.floor(
+    (_now.getTime() - new Date(_now.getFullYear(), 0, 0).getTime()) / 86400000,
+  );
+  const today = dailyQuestions[_doy % dailyQuestions.length];
 
   const anniversary = user?.anniversary ? new Date(user.anniversary) : new Date();
   const togetherDays = daysSince(anniversary);

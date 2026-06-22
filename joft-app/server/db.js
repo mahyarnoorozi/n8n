@@ -14,7 +14,7 @@ const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const empty = { users: [], couples: [], answers: [], memories: [], gameResults: [] };
+const empty = { users: [], couples: [], answers: [], memories: [], gameResults: [], desireSwipes: [] };
 
 function load() {
   try {
@@ -145,6 +145,43 @@ export function addGameResult(coupleId, userId, gameId, answers) {
   db.gameResults.push(r);
   save();
   return r;
+}
+
+// ---------- تطبیق خواسته‌ها ----------
+/** ثبت یا به‌روزرسانیِ پاسخ یک کارت توسط کاربر در همین زوج. */
+export function addDesireSwipe(coupleId, userId, cardId, swipe) {
+  const existing = db.desireSwipes.find(
+    (s) => s.coupleId === coupleId && s.userId === userId && s.cardId === cardId,
+  );
+  if (existing) {
+    existing.swipe = swipe;
+    existing.updatedAt = now();
+    save();
+    return existing;
+  }
+  const s = { id: id(), coupleId, userId, cardId, swipe, updatedAt: now() };
+  db.desireSwipes.push(s);
+  save();
+  return s;
+}
+
+/** کارت‌هایی که هر دو نفرِ زوج «بله یا شاید» داده‌اند — همان «تطابق». */
+export function getDesireMatches(coupleId, userId, partnerId) {
+  if (!partnerId) return { matches: [], partnerSwipedCount: 0 };
+  const mine = new Map();
+  const theirs = new Map();
+  for (const s of db.desireSwipes) {
+    if (s.coupleId !== coupleId) continue;
+    if (s.userId === userId) mine.set(s.cardId, s.swipe);
+    else if (s.userId === partnerId) theirs.set(s.cardId, s.swipe);
+  }
+  const matches = [];
+  for (const [cardId, mySwipe] of mine.entries()) {
+    if (mySwipe === 'no') continue;
+    const partnerSwipe = theirs.get(cardId);
+    if (partnerSwipe === 'yes' || partnerSwipe === 'maybe') matches.push(cardId);
+  }
+  return { matches, partnerSwipedCount: theirs.size };
 }
 
 /** فقط برای تست‌ها: ریست دیتابیس در حافظه. */

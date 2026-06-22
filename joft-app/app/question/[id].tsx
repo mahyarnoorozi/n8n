@@ -54,9 +54,14 @@ export default function QuestionDetail() {
       </View>
 
       <View style={styles.hero}>
-        <Ionicons name="chatbubble-ellipses-outline" size={32} color={colors.accent} />
+        <View style={styles.heroIcon}>
+          <Ionicons name="chatbubble-ellipses" size={28} color={colors.accent} />
+        </View>
         <Txt variant="title" center style={{ marginTop: spacing.md }}>
           {question.text}
+        </Txt>
+        <Txt variant="caption" center color={colors.textMuted} style={{ marginTop: spacing.sm }}>
+          خصوصی بین شما دو نفر — تا وقتی هر دو جواب بدید، نمایان نمی‌شه.
         </Txt>
       </View>
 
@@ -140,6 +145,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   hero: { alignItems: 'center', paddingHorizontal: spacing.md, marginTop: spacing.lg },
+  heroIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 22,
+    backgroundColor: colors.accentTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   input: {
     minHeight: 110,
     textAlign: 'right',

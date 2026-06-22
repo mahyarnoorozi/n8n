@@ -261,6 +261,45 @@ app.post('/api/games/:id/result', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- تطبیق خواسته‌ها ----------
+const VALID_SWIPES = new Set(['yes', 'maybe', 'no']);
+
+app.post('/api/desires/swipe', requireAuth, async (req, res) => {
+  const cardId = String(req.body?.cardId || '').trim();
+  const swipe = String(req.body?.swipe || '').trim();
+  if (!cardId || !VALID_SWIPES.has(swipe)) {
+    return res.status(400).json({ ok: false, error: 'invalid_input' });
+  }
+  const couple = db.ensureCouple(req.user.id);
+  const partner = db.getPartner(req.user.id);
+  db.addDesireSwipe(couple.id, req.user.id, cardId, swipe);
+
+  // اگر این پاسخ یک «تطابق جدید» ساخت، به نیمهٔ دیگر خبر بده
+  if (partner && (swipe === 'yes' || swipe === 'maybe')) {
+    const { matches: prev } = db.getDesireMatches(couple.id, req.user.id, partner.id);
+    if (prev.includes(cardId) && partner.pushToken) {
+      await sendPush(
+        partner.pushToken,
+        'یه تطابقِ تازه! ✨',
+        'یه ایدهٔ مشترک با نیمهٔ دیگرت داری — ببین چیه.',
+        { type: 'desire-match' },
+      );
+    }
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/desires/matches', requireAuth, (req, res) => {
+  const couple = db.ensureCouple(req.user.id);
+  const partner = db.getPartner(req.user.id);
+  const { matches, partnerSwipedCount } = db.getDesireMatches(
+    couple.id,
+    req.user.id,
+    partner?.id ?? null,
+  );
+  res.json({ ok: true, matches, partnerSwipedCount });
+});
+
 // ---------- ادمین: احراز با رمز ----------
 function requireAdmin(req, res, next) {
   const pass = req.headers['x-admin-password'];

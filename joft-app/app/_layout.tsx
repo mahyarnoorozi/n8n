@@ -62,6 +62,8 @@ export default function RootLayout() {
           <Stack.Screen name="love" />
           <Stack.Screen name="occasions" />
           <Stack.Screen name="cycle" />
+          <Stack.Screen name="desire-match" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="desire-matches" />
           <Stack.Screen name="settings" />
           <Stack.Screen name="info" />
           <Stack.Screen name="question/[id]" options={{ presentation: 'modal' }} />

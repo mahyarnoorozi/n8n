@@ -137,6 +137,27 @@ export const api = {
     }
   },
 
+  /** ثبتِ پاسخِ یک کارتِ «تطبیق خواسته‌ها». در حالت دمو فقط محلی. */
+  async saveDesireSwipe(cardId: string, swipe: 'yes' | 'maybe' | 'no') {
+    if (DEMO_MODE) return;
+    try {
+      await req('POST', '/api/desires/swipe', { cardId, swipe });
+    } catch {
+      // اگر سرور نبود، حالتِ محلی همچنان کار می‌کند
+    }
+  },
+
+  /** گرفتنِ تطابق‌ها (کارت‌هایی که هر دو نفر بله یا شاید گفته‌اند). */
+  async getDesireMatches(): Promise<{ matches: string[]; partnerSwipedCount: number } | null> {
+    if (DEMO_MODE) return null;
+    try {
+      const j = await req('GET', '/api/desires/matches');
+      return { matches: j.matches || [], partnerSwipedCount: j.partnerSwipedCount || 0 };
+    } catch {
+      return null;
+    }
+  },
+
   async registerPush(token: string) {
     if (DEMO_MODE) return;
     await req('POST', '/api/push/token', { token });
