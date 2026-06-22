@@ -7,8 +7,10 @@ import { useAuth } from '@/context/AuthContext';
 import { categories, dailyQuestions } from '@/data/content';
 import { fa } from '@/i18n/fa';
 import { getOccasions, type Occasion } from '@/storage/local';
+import { getCycle } from '@/storage/cycle';
 import { colors, radius, spacing } from '@/theme';
 import { daysSince, jalaliDayMonth } from '@/utils/jalali';
+import { computeStatus, PHASE_META, type CycleStatus } from '@/utils/cycle';
 import { toFa } from '@/utils/persian';
 
 export default function Home() {
@@ -21,9 +23,17 @@ export default function Home() {
 
   // مناسبت‌ها از حافظهٔ محلی خوانده می‌شوند تا با افزودن/ویرایش هماهنگ بمانند
   const [occasions, setOccasions] = useState<Occasion[]>([]);
+  const [cycle, setCycle] = useState<CycleStatus | null>(null);
   useFocusEffect(
     useCallback(() => {
       getOccasions().then(setOccasions);
+      getCycle().then((c) => {
+        setCycle(
+          c.periods.length > 0
+            ? computeStatus(c.periods[0].startISO, c.cycleLength, c.periodLength)
+            : null,
+        );
+      });
     }, []),
   );
 
@@ -86,6 +96,24 @@ export default function Home() {
           </Txt>
         </View>
         <Ionicons name="chevron-back" size={20} color={colors.textInverse} />
+      </Pressable>
+
+      {/* کارت مراقبت و چرخه — وضعیت زنده */}
+      <Pressable onPress={() => router.push('/cycle')} style={styles.cycleCard}>
+        <View style={styles.cycleIcon}>
+          <Ionicons name="flower-outline" size={22} color={colors.accent} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Txt variant="bodyBold">مراقبت و چرخه</Txt>
+          <Txt variant="tiny" color={colors.textMuted} style={{ marginTop: 2 }}>
+            {cycle
+              ? cycle.isOnPeriod
+                ? `روزهای پریود • روزِ ${toFa(cycle.dayInCycle)}`
+                : `${toFa(cycle.daysUntilNextPeriod)} روز تا پریود بعدی • ${PHASE_META[cycle.phase].title}`
+              : 'چرخه‌ات را اضافه کن تا روزهای مهم را پیش‌بینی کنیم'}
+          </Txt>
+        </View>
+        <Ionicons name="chevron-back" size={20} color={colors.textFaint} />
       </Pressable>
 
       {/* سؤال امروز */}
@@ -200,6 +228,25 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 16,
     backgroundColor: colors.accentWarm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cycleCard: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginTop: spacing.md,
+  },
+  cycleIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    backgroundColor: colors.accentTint,
     alignItems: 'center',
     justifyContent: 'center',
   },

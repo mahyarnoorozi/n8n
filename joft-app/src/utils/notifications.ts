@@ -80,6 +80,30 @@ export async function fireDemoLoveMessage(text: string, afterSeconds = 4) {
   }
 }
 
+/**
+ * یادآورِ چرخه: دو روز پیش از شروعِ احتمالیِ پریود، ساعت ۹ صبح.
+ * شناسهٔ اعلان را برمی‌گرداند (یا null اگر تاریخ گذشته/اجازه نبود).
+ */
+export async function schedulePeriodReminder(nextStart: Date): Promise<string | null> {
+  if (!(await ensureNotificationPermission())) return null;
+  const remindAt = new Date(nextStart);
+  remindAt.setDate(remindAt.getDate() - 2);
+  remindAt.setHours(9, 0, 0, 0);
+  if (remindAt.getTime() < Date.now()) return null;
+  try {
+    return await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'یادآوری چرخه 🌸',
+        body: 'پریودت احتمالاً تا حدود دو روز دیگه شروع می‌شه. آماده باش و به خودت برس.',
+        sound: 'default',
+      },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: remindAt },
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function cancelNotification(id: string | null | undefined) {
   if (!id) return;
   try {

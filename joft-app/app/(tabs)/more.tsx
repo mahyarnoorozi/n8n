@@ -14,6 +14,7 @@ export default function More() {
 
   const items: { icon: keyof typeof Ionicons.glyphMap; label: string; route: string }[] = [
     { icon: 'heart-circle-outline', label: 'صمیمت و پیام عاشقانه', route: '/love' },
+    { icon: 'flower-outline', label: 'مراقبت و چرخهٔ قاعدگی', route: '/cycle' },
     { icon: 'calendar-outline', label: 'مناسبت‌ها و یادآورها', route: '/occasions' },
     { icon: 'link-outline', label: fa.connectFromMore, route: '/connect' },
     { icon: 'person-circle-outline', label: 'حساب کاربری و تنظیمات', route: '/settings' },
