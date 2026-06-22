@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Avatar, Button, Card, Screen, SkeletonList, Txt } from '@/components';
+import { Avatar, Card, EmptyState, Screen, SkeletonList, Txt, useToast } from '@/components';
 import { api, type Memory } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
 import { fa } from '@/i18n/fa';
@@ -55,6 +55,7 @@ export default function Memories() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     (async () => {
@@ -92,6 +93,7 @@ export default function Memories() {
       setText('');
       setPhotoUri(null);
       setComposerOpen(false);
+      toast.show('خاطره ثبت شد 🖤', 'success');
     } finally {
       setSaving(false);
     }
@@ -187,7 +189,7 @@ export default function Memories() {
       {loading ? (
         <SkeletonList count={3} />
       ) : memories.length === 0 ? (
-        <EmptyState onPickSeed={(s) => { setText(s); setComposerOpen(true); }} />
+        <MemoriesEmpty onPickSeed={(s) => { setText(s); setComposerOpen(true); }} />
       ) : (
         <View style={{ marginTop: spacing.xl, gap: spacing.xl }}>
           {groups.map((g) => (
@@ -240,23 +242,19 @@ export default function Memories() {
   );
 }
 
-function EmptyState({ onPickSeed }: { onPickSeed: (seed: string) => void }) {
+function MemoriesEmpty({ onPickSeed }: { onPickSeed: (seed: string) => void }) {
   return (
-    <View style={{ marginTop: spacing.xxl, alignItems: 'center' }}>
-      <View style={styles.emptyIcon}>
-        <Ionicons name="images-outline" size={36} color={colors.accent} />
-      </View>
-      <Txt variant="heading" center style={{ marginTop: spacing.md }}>
-        دفترِ خاطره‌هاتون خالیه
-      </Txt>
-      <Txt variant="body" center color={colors.textMuted} style={{ marginTop: spacing.sm, paddingHorizontal: spacing.lg }}>
-        با یه جمله، یه عکس یا فقط یه فکر شروع کن. این‌جا فقط متعلق به شما دو نفره.
-      </Txt>
-
+    <View style={{ marginTop: spacing.xxl }}>
+      <EmptyState
+        icon="images-outline"
+        tone="lilac"
+        title="دفترِ خاطره‌هاتون خالیه"
+        body="با یه جمله، یه عکس یا فقط یه فکر شروع کن. این‌جا فقط متعلق به شما دو نفره."
+      />
       <Txt variant="caption" color={colors.textMuted} style={{ marginTop: spacing.xl, marginBottom: spacing.sm }}>
         یه پیشنهاد برای شروع:
       </Txt>
-      <View style={{ width: '100%', gap: spacing.sm }}>
+      <View style={{ gap: spacing.sm }}>
         {SEED_PROMPTS.map((s) => (
           <Pressable key={s} style={styles.seed} onPress={() => onPickSeed(s)}>
             <Ionicons name="bulb-outline" size={16} color={colors.accent} />
@@ -357,14 +355,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
   },
 
-  emptyIcon: {
-    width: 84,
-    height: 84,
-    borderRadius: 28,
-    backgroundColor: colors.accentTint,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   seed: {
     flexDirection: 'row-reverse',
     alignItems: 'center',

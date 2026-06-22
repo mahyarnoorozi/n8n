@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Button, Card, Screen, Txt } from '@/components';
+import { Button, Card, Screen, Txt, useToast } from '@/components';
 import { api } from '@/api/client';
 import { DEMO_MODE } from '@/config';
 import { useAuth } from '@/context/AuthContext';
@@ -14,6 +14,7 @@ import { cancelNotification, fireDemoLoveMessage, scheduleDailyLoveNudge } from 
 export default function Love() {
   const router = useRouter();
   const { user } = useAuth();
+  const toast = useToast();
   const partner = user?.partnerName?.trim() || 'نیمهٔ دیگرت';
 
   const [text, setText] = useState('');
@@ -40,6 +41,10 @@ export default function Love() {
       }
       setText('');
       setSent(true);
+      toast.show(
+        linked ? 'پیامت برای نیمهٔ دیگرت فرستاده شد 💞' : 'پیش‌نمایش ارسال شد؛ الان اعلانش می‌رسه 💌',
+        'success',
+      );
       setTimeout(() => setSent(false), 3000);
     } finally {
       setSending(false);

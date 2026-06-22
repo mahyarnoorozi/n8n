@@ -5,13 +5,12 @@ import {
   Alert,
   Animated,
   Easing,
-  Modal,
   Pressable,
   StyleSheet,
   Switch,
   View,
 } from 'react-native';
-import { Button, Card, Screen, Txt } from '@/components';
+import { BottomSheet, Button, Card, Screen, Txt } from '@/components';
 import { api } from '@/api/client';
 import {
   categoryOf,
@@ -429,57 +428,50 @@ function SettingsSheet({
   onReset: () => void;
 }) {
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} />
-      <View style={styles.sheet}>
-        <Txt variant="heading" center style={{ marginBottom: spacing.lg }}>
-          تنظیمات بازی
-        </Txt>
+    <BottomSheet visible={visible} onClose={onClose} title="تنظیمات بازی">
+      <View style={styles.settingRow}>
+        <View style={{ flex: 1 }}>
+          <Txt variant="subtitle">حالتِ ۱۸+ (صریح‌تر)</Txt>
+          <Txt variant="tiny" color={colors.textMuted} style={{ marginTop: 2 }}>
+            ایده‌های صمیمتِ زناشویی برای زوج‌های متعهد
+          </Txt>
+        </View>
+        <Switch
+          value={state.settings.contentLevel === 'all'}
+          onValueChange={onToggleLevel}
+          trackColor={{ true: colors.accent, false: colors.border }}
+          thumbColor={colors.surface}
+        />
+      </View>
 
-        <View style={styles.settingRow}>
-          <View style={{ flex: 1 }}>
-            <Txt variant="subtitle">حالتِ ۱۸+ (صریح‌تر)</Txt>
-            <Txt variant="tiny" color={colors.textMuted} style={{ marginTop: 2 }}>
-              ایده‌های صمیمتِ زناشویی برای زوج‌های متعهد
+      <View style={styles.catsBox}>
+        <Txt variant="caption" color={colors.textMuted} style={{ marginBottom: spacing.sm }}>
+          دسته‌بندی‌ها
+        </Txt>
+        {DESIRE_CATEGORIES.filter(
+          (c) => c.id !== 'intimacy' || state.settings.contentLevel === 'all',
+        ).map((c) => (
+          <View key={c.id} style={styles.catLine}>
+            <Txt variant="body">
+              {c.emoji} {c.title}
+            </Txt>
+            <Txt variant="tiny" color={colors.textFaint} style={{ flex: 1 }}>
+              {' '}
+              — {c.description}
             </Txt>
           </View>
-          <Switch
-            value={state.settings.contentLevel === 'all'}
-            onValueChange={onToggleLevel}
-            trackColor={{ true: colors.accent, false: colors.border }}
-            thumbColor={colors.surface}
-          />
-        </View>
-
-        <View style={styles.catsBox}>
-          <Txt variant="caption" color={colors.textMuted} style={{ marginBottom: spacing.sm }}>
-            دسته‌بندی‌ها
-          </Txt>
-          {DESIRE_CATEGORIES.filter(
-            (c) => c.id !== 'intimacy' || state.settings.contentLevel === 'all',
-          ).map((c) => (
-            <View key={c.id} style={styles.catLine}>
-              <Txt variant="body">
-                {c.emoji} {c.title}
-              </Txt>
-              <Txt variant="tiny" color={colors.textFaint} style={{ flex: 1 }}>
-                {' '}
-                — {c.description}
-              </Txt>
-            </View>
-          ))}
-        </View>
-
-        <Pressable onPress={onReset} style={styles.resetBtn}>
-          <Ionicons name="refresh-outline" size={18} color={colors.accent} />
-          <Txt variant="bodyBold" color={colors.accent}>
-            پاک کردن همهٔ پاسخ‌ها
-          </Txt>
-        </Pressable>
-
-        <Button label="بستن" variant="ghost" onPress={onClose} style={{ marginTop: spacing.md }} />
+        ))}
       </View>
-    </Modal>
+
+      <Pressable onPress={onReset} style={styles.resetBtn}>
+        <Ionicons name="refresh-outline" size={18} color={colors.accent} />
+        <Txt variant="bodyBold" color={colors.accent}>
+          پاک کردن همهٔ پاسخ‌ها
+        </Txt>
+      </Pressable>
+
+      <Button label="بستن" variant="ghost" onPress={onClose} style={{ marginTop: spacing.md }} />
+    </BottomSheet>
   );
 }
 
@@ -573,18 +565,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  backdrop: { flex: 1, backgroundColor: 'rgba(27,26,41,0.35)' },
-  sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: colors.bg,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
-  },
   settingRow: {
     flexDirection: 'row-reverse',
     alignItems: 'center',

@@ -1,18 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  TextInput,
-  View,
-} from 'react-native';
-import { Button, Card, JalaliDatePicker, Screen, Txt } from '@/components';
+import { Pressable, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { BottomSheet, Button, Card, JalaliDatePicker, Screen, Txt } from '@/components';
 import { useAuth } from '@/context/AuthContext';
 import { colors, fonts, radius, spacing } from '@/theme';
 import { jalaliDayMonth } from '@/utils/jalali';
@@ -202,75 +192,65 @@ function EditModal({
   useEffect(() => setDraft(occasion), [occasion]);
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        style={styles.modalRoot}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.sheet}>
-          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-            <Txt variant="heading" center style={{ marginBottom: spacing.lg }}>
-              {occasion.title ? 'ویرایش مناسبت' : 'مناسبت جدید'}
-            </Txt>
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      title={occasion.title ? 'ویرایش مناسبت' : 'مناسبت جدید'}
+    >
+      <Txt variant="caption" style={{ marginBottom: spacing.sm }}>
+        عنوان
+      </Txt>
+      <TextInput
+        value={draft.title}
+        onChangeText={(t) => setDraft({ ...draft, title: t })}
+        placeholder="مثلاً سالگرد ازدواج"
+        placeholderTextColor={colors.textFaint}
+        style={styles.input}
+      />
 
-            <Txt variant="caption" style={{ marginBottom: spacing.sm }}>
-              عنوان
-            </Txt>
-            <TextInput
-              value={draft.title}
-              onChangeText={(t) => setDraft({ ...draft, title: t })}
-              placeholder="مثلاً سالگرد ازدواج"
-              placeholderTextColor={colors.textFaint}
-              style={styles.input}
-            />
+      <Txt variant="caption" style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
+        تاریخ (شمسی)
+      </Txt>
+      <JalaliDatePicker
+        value={new Date(draft.dateISO)}
+        onChange={(d) => setDraft({ ...draft, dateISO: d.toISOString() })}
+      />
 
-            <Txt variant="caption" style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
-              تاریخ (شمسی)
-            </Txt>
-            <JalaliDatePicker
-              value={new Date(draft.dateISO)}
-              onChange={(d) => setDraft({ ...draft, dateISO: d.toISOString() })}
-            />
+      <Txt variant="caption" style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
+        آیکن
+      </Txt>
+      <View style={styles.iconRow}>
+        {ICONS.map((ic) => {
+          const active = draft.icon === ic;
+          return (
+            <Pressable
+              key={ic}
+              onPress={() => setDraft({ ...draft, icon: ic })}
+              style={[styles.iconPick, active && styles.iconPickActive]}
+            >
+              <Ionicons name={ic} size={20} color={active ? colors.accent : colors.textMuted} />
+            </Pressable>
+          );
+        })}
+      </View>
 
-            <Txt variant="caption" style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
-              آیکن
-            </Txt>
-            <View style={styles.iconRow}>
-              {ICONS.map((ic) => {
-                const active = draft.icon === ic;
-                return (
-                  <Pressable
-                    key={ic}
-                    onPress={() => setDraft({ ...draft, icon: ic })}
-                    style={[styles.iconPick, active && styles.iconPickActive]}
-                  >
-                    <Ionicons name={ic} size={20} color={active ? colors.accent : colors.textMuted} />
-                  </Pressable>
-                );
-              })}
-            </View>
+      <View style={styles.switchRow}>
+        <Txt variant="subtitle">یادآوری بگیرم</Txt>
+        <Switch
+          value={draft.reminder}
+          onValueChange={(v) => setDraft({ ...draft, reminder: v })}
+          trackColor={{ true: colors.accent, false: colors.border }}
+          thumbColor={colors.surface}
+        />
+      </View>
 
-            <View style={styles.switchRow}>
-              <Txt variant="subtitle">یادآوری بگیرم</Txt>
-              <Switch
-                value={draft.reminder}
-                onValueChange={(v) => setDraft({ ...draft, reminder: v })}
-                trackColor={{ true: colors.accent, false: colors.border }}
-                thumbColor={colors.surface}
-              />
-            </View>
-
-            <Button
-              label="ذخیره"
-              onPress={() => onSave(draft)}
-              disabled={!draft.title.trim()}
-              style={{ marginTop: spacing.lg }}
-            />
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+      <Button
+        label="ذخیره"
+        onPress={() => onSave(draft)}
+        disabled={!draft.title.trim()}
+        style={{ marginTop: spacing.lg }}
+      />
+    </BottomSheet>
   );
 }
 
@@ -292,15 +272,6 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.xs },
   reminderRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.xs, marginTop: spacing.xs },
   actions: { flexDirection: 'row-reverse', gap: spacing.md, alignItems: 'center' },
-  modalRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(27,26,41,0.35)' },
-  sheet: {
-    backgroundColor: colors.bg,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
-    maxHeight: '88%',
-  },
   input: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,

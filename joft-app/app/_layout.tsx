@@ -13,6 +13,7 @@ import { I18nManager } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { ToastProvider } from '@/components';
 import { colors } from '@/theme';
 
 /** ثبت اعلان‌ها فقط وقتی کاربر وارد شده باشد. */
@@ -45,6 +46,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
+        <ToastProvider>
         <PushRegistrar />
         <StatusBar style="dark" />
         <Stack
@@ -70,6 +72,7 @@ export default function RootLayout() {
           <Stack.Screen name="question/[id]" options={{ presentation: 'modal' }} />
           <Stack.Screen name="article/[id]" />
         </Stack>
+        </ToastProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

@@ -3,7 +3,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Button, Card, Screen, Skeleton, Txt } from '@/components';
+import { Button, Card, Screen, Skeleton, Txt, useToast } from '@/components';
 import { api } from '@/api/client';
 import { DEMO_MODE } from '@/config';
 import { useAuth } from '@/context/AuthContext';
@@ -13,6 +13,7 @@ import { colors, fonts, radius, spacing } from '@/theme';
 export default function Connect() {
   const router = useRouter();
   const { user, completeProfile } = useAuth();
+  const toast = useToast();
   const [inviteCode, setInviteCode] = useState('');
   const [linked, setLinked] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -39,6 +40,7 @@ export default function Connect() {
   async function copy() {
     await Clipboard.setStringAsync(inviteCode);
     setCopied(true);
+    toast.show('کد دعوت کپی شد ✅', 'success');
     setTimeout(() => setCopied(false), 1500);
   }
 
@@ -54,6 +56,7 @@ export default function Connect() {
       const r = await api.joinCouple(c);
       if (r.ok) {
         setLinked(true);
+        toast.show('به هم وصل شدید 💞', 'success');
         if (r.partnerName) await completeProfile({ partnerName: r.partnerName });
       }
     } catch (e: any) {
