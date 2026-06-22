@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Avatar, Card, IconChip, Screen, SectionHeader, Txt } from '@/components';
+import { Avatar, BannerCarousel, Card, IconChip, Screen, SectionHeader, Txt, type Banner } from '@/components';
 import { useAuth } from '@/context/AuthContext';
 import { categories, dailyQuestions } from '@/data/content';
 import { fa } from '@/i18n/fa';
@@ -55,6 +55,33 @@ export default function Home() {
       ? occasions.map((o) => ({ title: o.title, date: new Date(o.dateISO), icon: o.icon }))
       : fallbackEvents;
 
+  const banners: Banner[] = [
+    {
+      id: 'desire',
+      title: 'بازیِ تطبیق خواسته‌ها 💞',
+      subtitle: 'ببین چه ایده‌هایی با هم دارید',
+      icon: 'sparkles',
+      tone: 'rose',
+      onPress: () => router.push('/desire-match'),
+    },
+    {
+      id: 'cycle',
+      title: 'مراقبت و چرخه 🌸',
+      subtitle: 'کنارِ هم، آگاه‌تر و مهربون‌تر',
+      icon: 'flower',
+      tone: 'lilac',
+      onPress: () => router.push('/cycle'),
+    },
+    {
+      id: 'premium',
+      title: 'نسخهٔ ویژه ✨',
+      subtitle: 'دسترسی کامل به همهٔ بخش‌ها',
+      icon: 'star',
+      tone: 'gold',
+      onPress: () => router.push('/(tabs)/more'),
+    },
+  ];
+
   return (
     <Screen>
       {/* سربرگ */}
@@ -86,6 +113,11 @@ export default function Home() {
           {toFa(togetherDays)} <Txt variant="heading" color={colors.text}>{fa.days}</Txt>
         </Txt>
       </Card>
+
+      {/* بنرهای گرافیکیِ کوتاه و قابل‌اسکرول */}
+      <View style={{ marginTop: spacing.lg }}>
+        <BannerCarousel items={banners} />
+      </View>
 
       {/* امروز — همهٔ کارهای روزانه در یک نگاه، تمیز و یکدست */}
       <SectionHeader title="امروز" />

@@ -29,7 +29,9 @@ function RtlTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
         return (
           <Pressable key={route.key} style={styles.item} onPress={onPress} hitSlop={6}>
-            {options.tabBarIcon?.({ focused, color, size: 24 })}
+            <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+              {options.tabBarIcon?.({ focused, color, size: 22 })}
+            </View>
             <Txt style={styles.label} color={color}>
               {typeof options.title === 'string' ? options.title : route.name}
             </Txt>
@@ -74,7 +76,7 @@ export default function TabsLayout() {
           title: fa.tabGames,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? 'game-controller' : 'game-controller-outline'}
+              name={focused ? 'sparkles' : 'sparkles-outline'}
               size={24}
               color={color}
             />
@@ -111,6 +113,12 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: 8,
   },
-  item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3 },
+  item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  iconWrap: {
+    paddingHorizontal: 18,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  iconWrapActive: { backgroundColor: colors.accentTint },
   label: { fontFamily: fonts.medium, fontSize: 11 },
 });
