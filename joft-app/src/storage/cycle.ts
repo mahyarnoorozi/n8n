@@ -25,6 +25,8 @@ export type CycleData = {
   reminders: boolean;
   reminderId?: string | null;
   perspective: Perspective;
+  /** آیا کاربر اجازه داده چرخه‌اش با نیمهٔ دیگر (در حالتِ همراه) به اشتراک گذاشته شود. */
+  shareWithPartner: boolean;
 };
 
 const CYCLE_KEY = '@joft/cycle';
@@ -36,6 +38,7 @@ export const DEFAULT_CYCLE: CycleData = {
   reminders: false,
   reminderId: null,
   perspective: 'self',
+  shareWithPartner: false,
 };
 
 export async function getCycle(): Promise<CycleData> {

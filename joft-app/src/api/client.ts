@@ -158,6 +158,36 @@ export const api = {
     }
   },
 
+  /** اشتراک‌گذاریِ پارامترهای چرخه با نیمهٔ دیگر (یا قطعِ اشتراک با share=false). */
+  async shareCycle(input: {
+    share: boolean;
+    lastPeriodStartISO?: string;
+    cycleLength?: number;
+    periodLength?: number;
+  }) {
+    if (DEMO_MODE) return;
+    try {
+      await req('POST', '/api/cycle/share', input);
+    } catch {
+      // اگر سرور نبود، اشتراک بی‌صدا رد می‌شود (حالت محلی همچنان کار می‌کند)
+    }
+  },
+
+  /** گرفتنِ چرخهٔ به‌اشتراک‌گذاشتهٔ نیمهٔ دیگر (یا null اگر چیزی به اشتراک نگذاشته). */
+  async getPartnerCycle(): Promise<{
+    lastPeriodStartISO: string;
+    cycleLength: number;
+    periodLength: number;
+  } | null> {
+    if (DEMO_MODE) return null;
+    try {
+      const j = await req('GET', '/api/cycle/partner');
+      return j.cycle ?? null;
+    } catch {
+      return null;
+    }
+  },
+
   async registerPush(token: string) {
     if (DEMO_MODE) return;
     await req('POST', '/api/push/token', { token });

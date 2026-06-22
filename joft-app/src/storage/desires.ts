@@ -25,6 +25,8 @@ export type DesireState = {
   settings: DesireSettings;
   cachedMatches: string[]; // id کارت‌های تطابق‌شده با نیمهٔ دیگر
   lastMatchesAt?: string;
+  /** آیا راهنمای اولِ بازی نمایش داده شده. */
+  onboarded: boolean;
 };
 
 const KEY = '@joft/desires';
@@ -33,6 +35,7 @@ const DEFAULT_STATE: DesireState = {
   swipes: {},
   settings: { contentLevel: 'soft', adultConfirmed: false },
   cachedMatches: [],
+  onboarded: false,
 };
 
 export async function getDesireState(): Promise<DesireState> {
@@ -70,6 +73,10 @@ export function setSettings(state: DesireState, patch: Partial<DesireSettings>):
 
 export function setCachedMatches(state: DesireState, matches: string[]): DesireState {
   return { ...state, cachedMatches: matches, lastMatchesAt: new Date().toISOString() };
+}
+
+export function markOnboarded(state: DesireState): DesireState {
+  return { ...state, onboarded: true };
 }
 
 /** کارت‌هایی که کاربر «بله یا شاید» داده — استفاده در حالتِ بدون اتصال به سرور. */

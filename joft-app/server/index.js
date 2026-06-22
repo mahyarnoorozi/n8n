@@ -300,6 +300,67 @@ app.get('/api/desires/matches', requireAuth, (req, res) => {
   res.json({ ok: true, matches, partnerSwipedCount });
 });
 
+// ---------- اشتراک چرخهٔ قاعدگی با نیمهٔ دیگر ----------
+app.post('/api/cycle/share', requireAuth, async (req, res) => {
+  const couple = db.ensureCouple(req.user.id);
+  const b = req.body || {};
+
+  // قطعِ اشتراک
+  if (b.share === false) {
+    db.removeCycleShare(couple.id, req.user.id);
+    return res.json({ ok: true, shared: false });
+  }
+
+  const lastPeriodStartISO = String(b.lastPeriodStartISO || '');
+  const cycleLength = Number(b.cycleLength);
+  const periodLength = Number(b.periodLength);
+  if (
+    !lastPeriodStartISO ||
+    !Number.isFinite(cycleLength) ||
+    cycleLength < 18 ||
+    cycleLength > 60 ||
+    !Number.isFinite(periodLength) ||
+    periodLength < 1 ||
+    periodLength > 15
+  ) {
+    return res.status(400).json({ ok: false, error: 'invalid_input' });
+  }
+
+  const { isNewPeriod } = db.setCycleShare(couple.id, req.user.id, {
+    lastPeriodStartISO,
+    cycleLength,
+    periodLength,
+  });
+
+  // اگر پریودِ تازه‌ای ثبت شده، به نیمهٔ دیگر یک تلنگرِ مهربان بفرست
+  const partner = db.getPartner(req.user.id);
+  if (isNewPeriod && partner?.pushToken) {
+    await sendPush(
+      partner.pushToken,
+      'مراقبت 🌸',
+      `${req.user.name || 'نیمهٔ دیگرت'} این روزها به محبتِ بیشترت نیاز داره.`,
+      { type: 'cycle' },
+    );
+  }
+  res.json({ ok: true, shared: true });
+});
+
+app.get('/api/cycle/partner', requireAuth, (req, res) => {
+  const couple = db.ensureCouple(req.user.id);
+  const partner = db.getPartner(req.user.id);
+  if (!partner) return res.json({ ok: true, cycle: null });
+  const share = db.getCycleShare(couple.id, partner.id);
+  if (!share) return res.json({ ok: true, cycle: null });
+  res.json({
+    ok: true,
+    cycle: {
+      lastPeriodStartISO: share.lastPeriodStartISO,
+      cycleLength: share.cycleLength,
+      periodLength: share.periodLength,
+    },
+  });
+});
+
 // ---------- ادمین: احراز با رمز ----------
 function requireAdmin(req, res, next) {
   const pass = req.headers['x-admin-password'];

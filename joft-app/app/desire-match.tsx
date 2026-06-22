@@ -21,6 +21,7 @@ import {
 } from '@/data/desires';
 import {
   getDesireState,
+  markOnboarded,
   saveDesireState,
   setSettings,
   setSwipe,
@@ -139,6 +140,22 @@ export default function DesireMatch() {
     );
   }
 
+  // راهنمای اولِ بازی — فقط بارِ نخست
+  if (!state.onboarded) {
+    return (
+      <Screen scroll={false}>
+        <View style={styles.topbar}>
+          <Pressable onPress={() => router.back()} hitSlop={12}>
+            <Ionicons name="close" size={26} color={colors.text} />
+          </Pressable>
+          <Txt variant="bodyBold">چطور کار می‌کنه؟</Txt>
+          <View style={{ width: 26 }} />
+        </View>
+        <Onboarding onDone={() => persist(markOnboarded(state))} />
+      </Screen>
+    );
+  }
+
   return (
     <Screen scroll={false}>
       <Topbar onBack={() => router.back()} onSettings={() => setShowSettings(true)} />
@@ -222,6 +239,70 @@ export default function DesireMatch() {
         }
       />
     </Screen>
+  );
+}
+
+const ONBOARDING_STEPS: {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  body: string;
+}[] = [
+  {
+    icon: 'people-outline',
+    title: 'هر دو نفر، جداگانه',
+    body: 'تو و نیمهٔ دیگرت جدا‌جدا به همین ایده‌ها پاسخ می‌دید. هیچ‌کس موقع انتخاب، جوابِ اون یکی رو نمی‌بینه.',
+  },
+  {
+    icon: 'hand-left-outline',
+    title: 'بله، شاید، یا نه',
+    body: 'برای هر کارت یکی رو انتخاب کن. «شاید» یعنی بدم نمیاد امتحانش کنم. سریع و بدون فکرِ زیاد.',
+  },
+  {
+    icon: 'heart',
+    title: 'فقط تطابق‌ها آشکار می‌شن',
+    body: 'اگر هر دو «بله یا شاید» بزنید، اون ایده به «تطابق‌ها» اضافه می‌شه. «نه»‌ی هر کدوم، برای همیشه خصوصی می‌مونه.',
+  },
+];
+
+function Onboarding({ onDone }: { onDone: () => void }) {
+  const [step, setStep] = useState(0);
+  const s = ONBOARDING_STEPS[step];
+  const last = step === ONBOARDING_STEPS.length - 1;
+  return (
+    <View style={styles.onboard}>
+      <View style={styles.onboardBody}>
+        <View style={styles.onboardIcon}>
+          <Ionicons name={s.icon} size={44} color={colors.accent} />
+        </View>
+        <Txt variant="title" center style={{ marginTop: spacing.xl }}>
+          {s.title}
+        </Txt>
+        <Txt variant="body" center color={colors.textMuted} style={{ marginTop: spacing.md }}>
+          {s.body}
+        </Txt>
+      </View>
+
+      <View style={styles.dots}>
+        {ONBOARDING_STEPS.map((_, i) => (
+          <View key={i} style={[styles.dot, i === step && styles.dotActive]} />
+        ))}
+      </View>
+
+      <Button
+        label={last ? 'شروع بازی' : 'بعدی'}
+        icon={last ? 'play' : 'arrow-back'}
+        onPress={() => (last ? onDone() : setStep((x) => x + 1))}
+      />
+      {!last ? (
+        <Pressable onPress={onDone} style={{ paddingVertical: spacing.md }}>
+          <Txt variant="caption" center color={colors.textFaint}>
+            رد کردن
+          </Txt>
+        </Pressable>
+      ) : (
+        <View style={{ height: spacing.xl }} />
+      )}
+    </View>
   );
 }
 
@@ -467,6 +548,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.hairline,
   },
+
+  onboard: { flex: 1, paddingBottom: spacing.lg },
+  onboardBody: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg },
+  onboardIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 32,
+    backgroundColor: colors.accentTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dots: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm, marginBottom: spacing.xl },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.border },
+  dotActive: { backgroundColor: colors.accent, width: 22 },
 
   empty: { alignItems: 'center', padding: spacing.xl },
   emptyIcon: {

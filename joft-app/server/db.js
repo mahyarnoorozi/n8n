@@ -14,7 +14,15 @@ const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const empty = { users: [], couples: [], answers: [], memories: [], gameResults: [], desireSwipes: [] };
+const empty = {
+  users: [],
+  couples: [],
+  answers: [],
+  memories: [],
+  gameResults: [],
+  desireSwipes: [],
+  cycleShares: [],
+};
 
 function load() {
   try {
@@ -182,6 +190,38 @@ export function getDesireMatches(coupleId, userId, partnerId) {
     if (partnerSwipe === 'yes' || partnerSwipe === 'maybe') matches.push(cardId);
   }
   return { matches, partnerSwipedCount: theirs.size };
+}
+
+// ---------- اشتراک چرخهٔ قاعدگی ----------
+/**
+ * ثبت/به‌روزرسانیِ پارامترهای چرخه‌ای که کاربر با نیمهٔ دیگرش به اشتراک می‌گذارد.
+ * فقط حداقلِ لازم برای محاسبه ذخیره می‌شود (نه کلِ تاریخچه).
+ * نتیجه شاملِ تشخیصِ «پریودِ تازه» است تا سرور بتواند اعلان بفرستد.
+ */
+export function setCycleShare(coupleId, userId, payload) {
+  const existing = db.cycleShares.find((c) => c.coupleId === coupleId && c.userId === userId);
+  const isNewPeriod = Boolean(
+    payload.lastPeriodStartISO &&
+      (!existing || existing.lastPeriodStartISO !== payload.lastPeriodStartISO),
+  );
+  if (existing) {
+    Object.assign(existing, payload, { updatedAt: now() });
+    save();
+    return { share: existing, isNewPeriod };
+  }
+  const share = { id: id(), coupleId, userId, ...payload, updatedAt: now() };
+  db.cycleShares.push(share);
+  save();
+  return { share, isNewPeriod };
+}
+
+export function removeCycleShare(coupleId, userId) {
+  db.cycleShares = db.cycleShares.filter((c) => !(c.coupleId === coupleId && c.userId === userId));
+  save();
+}
+
+export function getCycleShare(coupleId, userId) {
+  return db.cycleShares.find((c) => c.coupleId === coupleId && c.userId === userId) || null;
 }
 
 /** فقط برای تست‌ها: ریست دیتابیس در حافظه. */
