@@ -38,6 +38,13 @@ export function usePushNotifications(enabled: boolean) {
             name: 'پیش‌فرض',
             importance: Notifications.AndroidImportance.DEFAULT,
           });
+          // کانالِ پرقدرتِ «تلنگر» با لرزشِ محسوس
+          await Notifications.setNotificationChannelAsync('nudge', {
+            name: 'تلنگرِ دلتنگی',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 150, 250],
+            enableVibrate: true,
+          });
         }
 
         const projectId =

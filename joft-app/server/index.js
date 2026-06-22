@@ -254,6 +254,26 @@ app.post('/api/love', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------- تلنگرِ «به فکرتم» (لرزش روی گوشیِ نیمهٔ دیگر) ----------
+app.post('/api/nudge', requireAuth, async (req, res) => {
+  const partner = db.getPartner(req.user.id);
+  if (!partner) {
+    return res
+      .status(404)
+      .json({ ok: false, error: 'no_partner', message: 'هنوز به نیمهٔ دیگرت وصل نیستی.' });
+  }
+  if (partner.pushToken) {
+    await sendPush(
+      partner.pushToken,
+      `${req.user.name || 'نیمهٔ دیگرت'} به فکرته 💭`,
+      'یه تلنگرِ دلتنگی برات فرستاد.',
+      { type: 'nudge' },
+      'nudge',
+    );
+  }
+  res.json({ ok: true });
+});
+
 // ---------- نتیجهٔ بازی ----------
 app.post('/api/games/:id/result', requireAuth, (req, res) => {
   const couple = db.ensureCouple(req.user.id);

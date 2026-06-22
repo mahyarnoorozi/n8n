@@ -151,6 +151,17 @@ export const api = {
     await req('POST', '/api/love', { text });
   },
 
+  /** تلنگرِ «به فکرتم» — گوشیِ نیمهٔ دیگر را با یک اعلانِ پرلرزش خبر می‌کند. */
+  async sendNudge(): Promise<{ ok: boolean; reason?: 'demo' | 'error'; message?: string }> {
+    if (DEMO_MODE) return { ok: false, reason: 'demo' };
+    try {
+      await req('POST', '/api/nudge', {});
+      return { ok: true };
+    } catch (e: any) {
+      return { ok: false, reason: 'error', message: e?.message };
+    }
+  },
+
   /** ثبتِ پاسخِ یک کارتِ «تطبیق خواسته‌ها». در حالت دمو فقط محلی. */
   async saveDesireSwipe(cardId: string, swipe: 'yes' | 'maybe' | 'no') {
     if (DEMO_MODE) return;

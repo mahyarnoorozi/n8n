@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Avatar, BannerCarousel, Card, IconChip, Screen, SectionHeader, Txt, type Banner } from '@/components';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Vibration, View } from 'react-native';
+import { Avatar, BannerCarousel, Card, IconChip, Screen, SectionHeader, Txt, useToast, type Banner } from '@/components';
+import { api } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
 import { categories, dailyQuestions } from '@/data/content';
 import { fa } from '@/i18n/fa';
@@ -114,6 +115,9 @@ export default function Home() {
         </Txt>
       </Card>
 
+      {/* کارتِ امضایی: تلنگرِ «به فکرتم» — دمِ‌دست، بالای صفحه */}
+      <NudgeCard partnerName={user?.partnerName?.trim() || 'نیمهٔ دیگرت'} />
+
       {/* بنرهای گرافیکیِ کوتاه و قابل‌اسکرول */}
       <View style={{ marginTop: spacing.lg }}>
         <BannerCarousel items={banners} />
@@ -223,6 +227,68 @@ export default function Home() {
   );
 }
 
+/**
+ * کارتِ امضاییِ «به فکرتم» — حلقهٔ احساسیِ اپ.
+ * یک ضربه: گوشیِ خودت یه لرزشِ کوتاه می‌گیره (بازخوردِ آنی)، و گوشیِ نیمهٔ دیگرت
+ * یه اعلانِ پرلرزشِ «به فکرته 💭». قلب با ریتمِ آرام می‌تپد تا دعوت‌کننده باشد.
+ */
+function NudgeCard({ partnerName }: { partnerName: string }) {
+  const toast = useToast();
+  const beat = useRef(new Animated.Value(1)).current;
+  const lastSent = useRef(0);
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(beat, { toValue: 1.1, duration: 1100, useNativeDriver: true }),
+        Animated.timing(beat, { toValue: 1, duration: 1100, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [beat]);
+
+  async function send() {
+    if (Date.now() - lastSent.current < 1500) return; // جلوگیری از اسپم
+    lastSent.current = Date.now();
+    Vibration.vibrate(40);
+    Animated.sequence([
+      Animated.spring(beat, { toValue: 1.45, useNativeDriver: true, friction: 4 }),
+      Animated.spring(beat, { toValue: 1, useNativeDriver: true, friction: 4 }),
+    ]).start();
+
+    const r = await api.sendNudge();
+    if (r.ok) toast.show(`به ${partnerName} گفتیم که دلت تنگه 💭`, 'success');
+    else if (r.reason === 'demo')
+      toast.show('در حالت دمو تلنگر ارسال نمی‌شود؛ با اتصالِ واقعی به نیمهٔ دیگرت کار می‌کند 💭', 'info');
+    else toast.show(r.message || 'اول به نیمهٔ دیگرت وصل شو تا تلنگرت برسه.', 'info');
+  }
+
+  return (
+    <Pressable
+      onPress={send}
+      style={({ pressed }) => [styles.nudgeCard, pressed && { opacity: 0.92 }]}
+    >
+      <Animated.View style={[styles.nudgeHeart, { transform: [{ scale: beat }] }]}>
+        <Ionicons name="heart" size={24} color={colors.accent} />
+      </Animated.View>
+      <View style={{ flex: 1 }}>
+        <Txt variant="bodyBold" color={colors.textInverse}>
+          دلت تنگ شده؟ یه تلنگر بفرست
+        </Txt>
+        <Txt variant="tiny" color={colors.accentTint} style={{ marginTop: 2 }}>
+          گوشیِ {partnerName} می‌لرزه و می‌فهمه به فکرشی
+        </Txt>
+      </View>
+      <View style={styles.nudgeBtn}>
+        <Txt variant="tiny" color={colors.accent}>
+          به فکرتم 💭
+        </Txt>
+      </View>
+    </Pressable>
+  );
+}
+
 function TodayRow({
   icon,
   tone,
@@ -263,6 +329,29 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   todayDivider: { borderTopWidth: 1, borderTopColor: colors.border },
+  nudgeCard: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.accent,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  nudgeHeart: {
+    width: 46,
+    height: 46,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nudgeBtn: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
   header: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
