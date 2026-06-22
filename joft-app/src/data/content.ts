@@ -1,19 +1,22 @@
 /** دسته‌بندی‌های موضوعی مثل اپ پایرد ولی بومی‌سازی‌شده برای کاربر ایرانی.
- *  آیکن‌ها همگی از خانوادهٔ outline و در چیپ‌های هم‌رنگ نمایش داده می‌شوند. */
+ *  هر دسته یک «تون» رنگیِ پاستلی دارد تا ظاهرِ دوتون و گرمِ اپ یکدست بماند. */
+export type Tone = 'rose' | 'peach' | 'lilac' | 'mint' | 'gold' | 'sky';
+
 export type Category = {
   id: string;
   title: string;
   subtitle: string;
   icon: string; // نام آیکن Ionicons (outline)
+  tone: Tone;
 };
 
 export const categories: Category[] = [
-  { id: 'love', title: 'عشق و علاقه', subtitle: '۱۲ تمرین', icon: 'heart-outline' },
-  { id: 'talk', title: 'گفت‌وگو و درک', subtitle: '۹ تمرین', icon: 'chatbubbles-outline' },
-  { id: 'fun', title: 'تفریح و ماجراجویی', subtitle: '۸ تمرین', icon: 'sparkles-outline' },
-  { id: 'conflict', title: 'حل اختلاف', subtitle: '۷ تمرین', icon: 'shield-checkmark-outline' },
-  { id: 'memories', title: 'خاطره‌ها', subtitle: '۱۰ تمرین', icon: 'images-outline' },
-  { id: 'future', title: 'آینده و رؤیاها', subtitle: '۶ تمرین', icon: 'rocket-outline' },
+  { id: 'love', title: 'عشق و علاقه', subtitle: '۱۲ تمرین', icon: 'heart-outline', tone: 'rose' },
+  { id: 'talk', title: 'گفت‌وگو و درک', subtitle: '۹ تمرین', icon: 'chatbubbles-outline', tone: 'sky' },
+  { id: 'fun', title: 'تفریح و ماجراجویی', subtitle: '۸ تمرین', icon: 'sparkles-outline', tone: 'gold' },
+  { id: 'conflict', title: 'حل اختلاف', subtitle: '۷ تمرین', icon: 'shield-checkmark-outline', tone: 'mint' },
+  { id: 'memories', title: 'خاطره‌ها', subtitle: '۱۰ تمرین', icon: 'images-outline', tone: 'lilac' },
+  { id: 'future', title: 'آینده و رؤیاها', subtitle: '۶ تمرین', icon: 'rocket-outline', tone: 'peach' },
 ];
 
 /** سؤال‌های روزانه برای نزدیک‌تر شدن زوج‌ها */
@@ -76,74 +79,6 @@ export const dailyQuestions: DailyQuestion[] = [
   { id: 'q30', category: 'قدردانی', text: 'یه چیزی که این روزها از خودت بهش افتخار می‌کنی چیه؟' },
 ];
 
-/** بازی‌ها و کوییزهای زوجی */
-export type Game = {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: string;
-  duration: string;
-};
-
-export const games: Game[] = [
-  {
-    id: 'g1',
-    title: 'چقدر همدیگر را می‌شناسیم؟',
-    subtitle: 'حدس بزن پاسخِ نیمهٔ دیگرت چیست',
-    icon: 'happy-outline',
-    duration: '۵ دقیقه',
-  },
-  {
-    id: 'g2',
-    title: 'این یا آن',
-    subtitle: 'انتخاب‌های سریع برای شناخت سلیقهٔ هم',
-    icon: 'swap-horizontal-outline',
-    duration: '۳ دقیقه',
-  },
-  {
-    id: 'g3',
-    title: 'رابطهٔ از راه دور',
-    subtitle: 'نزدیک ماندن وقتی دور از هم هستید',
-    icon: 'airplane-outline',
-    duration: '۷ دقیقه',
-  },
-  {
-    id: 'g4',
-    title: 'سنت‌های دونفرهٔ ما',
-    subtitle: 'کارهای کوچکی که رابطه‌تان را خاص می‌کند',
-    icon: 'ribbon-outline',
-    duration: '۴ دقیقه',
-  },
-  {
-    id: 'g5',
-    title: 'زبان عشق تو چیست؟',
-    subtitle: 'کشف کنید هرکدام چطور محبت را دریافت می‌کنید',
-    icon: 'heart-half-outline',
-    duration: '۶ دقیقه',
-  },
-];
-
-/** کوییزِ نمونه برای صفحهٔ جزئیات بازی */
-export type QuizQuestion = {
-  prompt: string;
-  options: string[];
-};
-
-export const sampleQuiz: QuizQuestion[] = [
-  {
-    prompt: 'یک لحظهٔ معنادار در رابطه‌تان کدام است که نیمهٔ دیگرت بیشتر دوست دارد جشن بگیرید؟',
-    options: ['با یک هدیهٔ فکرشده', 'با یک شب بیرون رفتن', 'با نوشتن یک یادداشت عاشقانه'],
-  },
-  {
-    prompt: 'در یک روز تعطیل، شریک زندگی‌ات کدام را بیشتر دوست دارد؟',
-    options: ['ماندن در خانه و فیلم دیدن', 'گردش در طبیعت', 'دیدن دوستان و خانواده'],
-  },
-  {
-    prompt: 'بهترین راه دلداری دادن به او وقتی ناراحت است چیست؟',
-    options: ['در آغوش گرفتن', 'گوش دادن بدون قضاوت', 'دادن فضای خلوت'],
-  },
-];
-
 /** مقاله‌ها و توصیه‌های کارشناسی (مثل بخش advice پایرد) */
 export type Article = {
   id: string;
@@ -151,6 +86,7 @@ export type Article = {
   category: string;
   readTime: string;
   icon: string;
+  tone: Tone;
   excerpt: string;
   body: string[];
 };
@@ -162,6 +98,7 @@ export const articles: Article[] = [
     category: 'گفت‌وگو',
     readTime: '۴ دقیقه مطالعه',
     icon: 'chatbubble-ellipses-outline',
+    tone: 'sky',
     excerpt: 'به‌جای «تو همیشه...»، از «من احساس می‌کنم...» استفاده کن تا شنیده شوی.',
     body: [
       'در روزهای اول آشنایی، حرف زدن دربارهٔ احساسات آسان است؛ اما با گذشت زمان گاهی همان حرف‌ها به جرّوبحث تبدیل می‌شوند.',
@@ -175,6 +112,7 @@ export const articles: Article[] = [
     category: 'عشق و علاقه',
     readTime: '۳ دقیقه مطالعه',
     icon: 'sparkles-outline',
+    tone: 'gold',
     excerpt: 'لازم نیست کار بزرگی بکنی؛ عادت‌های کوچک، رابطه را گرم نگه می‌دارند.',
     body: [
       'تحقیقات نشان می‌دهد زوج‌هایی که هر روز چند دقیقه به رابطه‌شان توجه می‌کنند، رضایت بیشتری دارند.',
@@ -188,6 +126,7 @@ export const articles: Article[] = [
     category: 'رابطهٔ از راه دور',
     readTime: '۵ دقیقه مطالعه',
     icon: 'airplane-outline',
+    tone: 'peach',
     excerpt: 'فاصله می‌تواند رابطه را قوی‌تر کند، اگر بلد باشید چطور.',
     body: [
       'رابطهٔ از راه دور سخت است، اما با برنامه و گفت‌وگوی منظم می‌تواند بسیار عمیق باشد.',

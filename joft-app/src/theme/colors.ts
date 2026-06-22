@@ -39,4 +39,20 @@ export const colors = {
   star: '#F5B301',
 } as const;
 
+/**
+ * پالتِ «دوتون» — هر تون یک پس‌زمینهٔ پاستلیِ ملایم (bg) و یک رنگِ آیکنِ سرزنده (fg) دارد.
+ * این پالت به آیکن‌ها و دسته‌بندی‌ها حسِ گرم، مدرن و چندرنگِ یکدست می‌دهد،
+ * در حالی‌که قرمزِ برند همچنان رنگِ اصلیِ کنش‌ها (دکمه/تب فعال) می‌ماند.
+ */
+export const tones = {
+  rose: { bg: '#FDE7EC', fg: '#EE1844' },
+  peach: { bg: '#FFEBDD', fg: '#E8730C' },
+  lilac: { bg: '#EFE9FB', fg: '#7C66D6' },
+  mint: { bg: '#E2F6EE', fg: '#1FAE78' },
+  gold: { bg: '#FCF1D6', fg: '#D99A00' },
+  sky: { bg: '#E6F1FB', fg: '#2E7FD1' },
+} as const;
+
+export type Tone = keyof typeof tones;
+
 export type ColorKey = keyof typeof colors;

@@ -3,7 +3,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Card, IconChip, Screen, SectionHeader, Tag, Txt } from '@/components';
-import { articles, games } from '@/data/content';
+import { articles } from '@/data/content';
 import { visibleCards } from '@/data/desires';
 import { getDesireState, swipeCount } from '@/storage/desires';
 import { colors, radius, shadow, spacing } from '@/theme';
@@ -95,33 +95,13 @@ export default function Games() {
         </Pressable>
       </View>
 
-      {/* بازی‌های ساده‌تر */}
-      <SectionHeader title="بازی‌های شناختِ همدیگه" />
-      <View style={{ gap: spacing.md }}>
-        {games.map((g) => (
-          <Card key={g.id} onPress={() => router.push(`/game/${g.id}`)}>
-            <View style={styles.gameRow}>
-              <IconChip icon={g.icon as any} size={48} />
-              <View style={{ flex: 1 }}>
-                <Txt variant="bodyBold">{g.title}</Txt>
-                <Txt variant="caption" color={colors.textMuted} style={{ marginTop: 2 }}>
-                  {g.subtitle}
-                </Txt>
-              </View>
-              <Tag label={g.duration} />
-            </View>
-          </Card>
-        ))}
-      </View>
-
       {/* مقاله‌ها و توصیه‌های کارشناسی */}
       <SectionHeader title="بخوان و یاد بگیر" />
       <View style={{ gap: spacing.md }}>
         {articles.map((a) => (
           <Card key={a.id} onPress={() => router.push(`/article/${a.id}`)} style={styles.article}>
-            <View style={styles.accentBar} />
             <View style={styles.gameRow}>
-              <IconChip icon={a.icon as any} size={44} />
+              <IconChip icon={a.icon as any} size={44} tone={a.tone} />
               <View style={{ flex: 1 }}>
                 <Txt variant="bodyBold" style={{ lineHeight: 26 }}>
                   {a.title}

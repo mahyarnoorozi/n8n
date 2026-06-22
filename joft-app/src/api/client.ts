@@ -151,15 +151,6 @@ export const api = {
     await req('POST', '/api/love', { text });
   },
 
-  async saveGameResult(gameId: string, answers: number[]) {
-    if (DEMO_MODE) return;
-    try {
-      await req('POST', `/api/games/${gameId}/result`, { answers });
-    } catch {
-      // ذخیرهٔ نتیجه حیاتی نیست؛ در صورت خطا بی‌صدا رد می‌شویم
-    }
-  },
-
   /** ثبتِ پاسخِ یک کارتِ «تطبیق خواسته‌ها». در حالت دمو فقط محلی. */
   async saveDesireSwipe(cardId: string, swipe: 'yes' | 'maybe' | 'no') {
     if (DEMO_MODE) return;

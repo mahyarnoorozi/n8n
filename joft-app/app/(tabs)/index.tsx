@@ -184,7 +184,7 @@ export default function Home() {
             style={styles.catCard}
             onPress={() => router.push('/(tabs)/questions')}
           >
-            <IconChip icon={c.icon as any} size={42} />
+            <IconChip icon={c.icon as any} size={42} tone={c.tone} />
             <Txt variant="bodyBold" style={{ marginTop: spacing.md }}>
               {c.title}
             </Txt>

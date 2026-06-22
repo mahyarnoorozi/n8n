@@ -1,44 +1,42 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
-import { colors, radius } from '@/theme';
+import { colors, tones, type Tone } from '@/theme';
 
 type Props = {
   icon: keyof typeof Ionicons.glyphMap;
   size?: number;
+  tone?: Tone;
+  /** حالتِ قدیمی برای سازگاری؛ معادلِ تونِ rose. */
   active?: boolean;
   style?: ViewStyle;
 };
 
 /**
- * چیپِ آیکنِ یکدست برای کل برنامه: یک مربعِ گردگوشهٔ هم‌رنگ با آیکنِ outline.
- * این کامپوننت تضمین می‌کند همهٔ آیکن‌ها یک خانواده، یک اندازه و یک رنگ داشته باشند.
- * حالت active برای جلب توجه از رنگ برند (قرمز) استفاده می‌کند.
+ * چیپِ آیکنِ «دوتون»: یک حبابِ گردگوشهٔ پاستلی با آیکنِ توپرِ سرزنده.
+ * نامِ آیکن را خودکار از حالتِ outline به توپر تبدیل می‌کند تا ظاهر مدرن و گرم بماند.
+ * هر چیپ یک «تون» رنگی می‌گیرد تا کلِ اپ، چندرنگ اما یکدست دیده شود.
  */
-export function IconChip({ icon, size = 46, active = false, style }: Props) {
+export function IconChip({ icon, size = 46, tone = 'rose', active = false, style }: Props) {
+  const t = tones[tone];
+  const filled = String(icon).replace(/-outline$/, '') as keyof typeof Ionicons.glyphMap;
   return (
     <View
       style={[
         styles.chip,
-        { width: size, height: size, borderRadius: size * 0.32 },
-        active ? styles.active : null,
+        { width: size, height: size, borderRadius: size * 0.38, backgroundColor: t.bg },
+        active ? { backgroundColor: colors.accentSoft } : null,
         style,
       ]}
     >
-      <Ionicons
-        name={icon}
-        size={size * 0.5}
-        color={colors.accent}
-      />
+      <Ionicons name={filled} size={size * 0.5} color={t.fg} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   chip: {
-    backgroundColor: colors.chip,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  active: { backgroundColor: colors.accentSoft },
 });

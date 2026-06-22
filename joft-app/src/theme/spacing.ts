@@ -7,11 +7,12 @@ export const spacing = {
   xxl: 32,
 } as const;
 
+// گوشه‌های گردتر برای حسِ گرم و دوستانه‌ترِ اپ
 export const radius = {
-  sm: 10,
-  md: 16,
-  lg: 22,
-  xl: 28,
+  sm: 12,
+  md: 18,
+  lg: 24,
+  xl: 30,
   pill: 999,
 } as const;
 

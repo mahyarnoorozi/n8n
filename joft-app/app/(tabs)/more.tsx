@@ -2,26 +2,31 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Avatar, Card, Screen, Txt } from '@/components';
+import { Avatar, Card, IconChip, Screen, Txt } from '@/components';
 import { useAuth } from '@/context/AuthContext';
 import { fa } from '@/i18n/fa';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, type Tone } from '@/theme';
 import { formatIranPhone } from '@/utils/persian';
 
 export default function More() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
-  const items: { icon: keyof typeof Ionicons.glyphMap; label: string; route: string }[] = [
-    { icon: 'heart-circle-outline', label: 'صمیمت و پیام عاشقانه', route: '/love' },
-    { icon: 'flower-outline', label: 'مراقبت و چرخهٔ قاعدگی', route: '/cycle' },
-    { icon: 'calendar-outline', label: 'مناسبت‌ها و یادآورها', route: '/occasions' },
-    { icon: 'link-outline', label: fa.connectFromMore, route: '/connect' },
-    { icon: 'person-circle-outline', label: 'حساب کاربری و تنظیمات', route: '/settings' },
-    { icon: 'notifications-outline', label: 'اعلان‌ها و یادآوری‌ها', route: '/settings' },
-    { icon: 'lock-closed-outline', label: 'حریم خصوصی و امنیت', route: '/info?topic=privacy' },
-    { icon: 'help-circle-outline', label: 'پشتیبانی و تماس با ما', route: '/info?topic=support' },
-    { icon: 'information-circle-outline', label: 'دربارهٔ جفتیما', route: '/info?topic=about' },
+  const items: {
+    icon: keyof typeof Ionicons.glyphMap;
+    label: string;
+    route: string;
+    tone: Tone;
+  }[] = [
+    { icon: 'heart-circle-outline', label: 'صمیمت و پیام عاشقانه', route: '/love', tone: 'rose' },
+    { icon: 'flower-outline', label: 'مراقبت و چرخهٔ قاعدگی', route: '/cycle', tone: 'lilac' },
+    { icon: 'calendar-outline', label: 'مناسبت‌ها و یادآورها', route: '/occasions', tone: 'peach' },
+    { icon: 'link-outline', label: fa.connectFromMore, route: '/connect', tone: 'mint' },
+    { icon: 'person-circle-outline', label: 'حساب کاربری و تنظیمات', route: '/settings', tone: 'sky' },
+    { icon: 'notifications-outline', label: 'اعلان‌ها و یادآوری‌ها', route: '/settings', tone: 'gold' },
+    { icon: 'lock-closed-outline', label: 'حریم خصوصی و امنیت', route: '/info?topic=privacy', tone: 'lilac' },
+    { icon: 'help-circle-outline', label: 'پشتیبانی و تماس با ما', route: '/info?topic=support', tone: 'sky' },
+    { icon: 'information-circle-outline', label: 'دربارهٔ جفتیما', route: '/info?topic=about', tone: 'rose' },
   ];
 
   async function handleLogout() {
@@ -81,7 +86,7 @@ export default function More() {
             style={[styles.item, i > 0 && styles.itemBorder]}
             onPress={() => router.push(item.route as any)}
           >
-            <Ionicons name={item.icon} size={22} color={colors.accent} />
+            <IconChip icon={item.icon} size={38} tone={item.tone} />
             <Txt variant="subtitle" style={{ flex: 1 }}>
               {item.label}
             </Txt>
