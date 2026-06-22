@@ -232,6 +232,17 @@ export default function Home() {
  * یک ضربه: گوشیِ خودت یه لرزشِ کوتاه می‌گیره (بازخوردِ آنی)، و گوشیِ نیمهٔ دیگرت
  * یه اعلانِ پرلرزشِ «به فکرته 💭». قلب با ریتمِ آرام می‌تپد تا دعوت‌کننده باشد.
  */
+const NUDGE_TYPES: {
+  key: 'miss' | 'kiss' | 'hug';
+  emoji: string;
+  label: string;
+  sent: (p: string) => string;
+}[] = [
+  { key: 'miss', emoji: '💭', label: 'دلتنگی', sent: (p) => `به ${p} گفتیم دلت تنگه 💭` },
+  { key: 'kiss', emoji: '😘', label: 'بوسه', sent: (p) => `یه بوسه برای ${p} فرستادیم 😘` },
+  { key: 'hug', emoji: '🤗', label: 'بغل', sent: (p) => `یه بغلِ گرم برای ${p} فرستادیم 🤗` },
+];
+
 function NudgeCard({ partnerName }: { partnerName: string }) {
   const toast = useToast();
   const beat = useRef(new Animated.Value(1)).current;
@@ -248,44 +259,55 @@ function NudgeCard({ partnerName }: { partnerName: string }) {
     return () => loop.stop();
   }, [beat]);
 
-  async function send() {
-    if (Date.now() - lastSent.current < 1500) return; // جلوگیری از اسپم
+  async function send(t: (typeof NUDGE_TYPES)[number]) {
+    if (Date.now() - lastSent.current < 1200) return; // جلوگیری از اسپم
     lastSent.current = Date.now();
     Vibration.vibrate(40);
     Animated.sequence([
-      Animated.spring(beat, { toValue: 1.45, useNativeDriver: true, friction: 4 }),
+      Animated.spring(beat, { toValue: 1.4, useNativeDriver: true, friction: 4 }),
       Animated.spring(beat, { toValue: 1, useNativeDriver: true, friction: 4 }),
     ]).start();
 
-    const r = await api.sendNudge();
-    if (r.ok) toast.show(`به ${partnerName} گفتیم که دلت تنگه 💭`, 'success');
+    const r = await api.sendNudge(t.key);
+    if (r.ok) toast.show(t.sent(partnerName), 'success');
     else if (r.reason === 'demo')
       toast.show('در حالت دمو تلنگر ارسال نمی‌شود؛ با اتصالِ واقعی به نیمهٔ دیگرت کار می‌کند 💭', 'info');
     else toast.show(r.message || 'اول به نیمهٔ دیگرت وصل شو تا تلنگرت برسه.', 'info');
   }
 
   return (
-    <Pressable
-      onPress={send}
-      style={({ pressed }) => [styles.nudgeCard, pressed && { opacity: 0.92 }]}
-    >
-      <Animated.View style={[styles.nudgeHeart, { transform: [{ scale: beat }] }]}>
-        <Ionicons name="heart" size={24} color={colors.accent} />
-      </Animated.View>
-      <View style={{ flex: 1 }}>
-        <Txt variant="bodyBold" color={colors.textInverse}>
-          دلت تنگ شده؟ یه تلنگر بفرست
-        </Txt>
-        <Txt variant="tiny" color={colors.accentTint} style={{ marginTop: 2 }}>
-          گوشیِ {partnerName} می‌لرزه و می‌فهمه به فکرشی
-        </Txt>
+    <View style={styles.nudgeCard}>
+      <View style={styles.nudgeHead}>
+        <Animated.View style={[styles.nudgeHeart, { transform: [{ scale: beat }] }]}>
+          <Ionicons name="heart" size={22} color={colors.accent} />
+        </Animated.View>
+        <View style={{ flex: 1 }}>
+          <Txt variant="bodyBold" color={colors.textInverse}>
+            یه تلنگر به {partnerName} بفرست
+          </Txt>
+          <Txt variant="tiny" color={colors.accentTint} style={{ marginTop: 2 }}>
+            گوشیش می‌لرزه و می‌فهمه به فکرشی
+          </Txt>
+        </View>
       </View>
-      <View style={styles.nudgeBtn}>
-        <Txt variant="tiny" color={colors.accent}>
-          به فکرتم 💭
-        </Txt>
+      <View style={styles.nudgeRow}>
+        {NUDGE_TYPES.map((t) => (
+          <Pressable
+            key={t.key}
+            onPress={() => send(t)}
+            style={({ pressed }) => [
+              styles.nudgeBtn,
+              pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+            ]}
+          >
+            <Txt style={styles.nudgeEmoji}>{t.emoji}</Txt>
+            <Txt variant="tiny" color={colors.accent}>
+              {t.label}
+            </Txt>
+          </Pressable>
+        ))}
       </View>
-    </Pressable>
+    </View>
   );
 }
 
@@ -330,28 +352,33 @@ const styles = StyleSheet.create({
   },
   todayDivider: { borderTopWidth: 1, borderTopColor: colors.border },
   nudgeCard: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: spacing.md,
     backgroundColor: colors.accent,
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginTop: spacing.lg,
+    gap: spacing.md,
   },
+  nudgeHead: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.md },
   nudgeHeart: {
-    width: 46,
-    height: 46,
+    width: 44,
+    height: 44,
     borderRadius: 16,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  nudgeRow: { flexDirection: 'row-reverse', gap: spacing.sm },
   nudgeBtn: {
+    flex: 1,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
     backgroundColor: colors.surface,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
   },
+  nudgeEmoji: { fontSize: 18 },
   header: {
     flexDirection: 'row-reverse',
     alignItems: 'center',

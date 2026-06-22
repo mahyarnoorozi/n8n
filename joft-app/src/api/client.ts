@@ -151,11 +151,13 @@ export const api = {
     await req('POST', '/api/love', { text });
   },
 
-  /** تلنگرِ «به فکرتم» — گوشیِ نیمهٔ دیگر را با یک اعلانِ پرلرزش خبر می‌کند. */
-  async sendNudge(): Promise<{ ok: boolean; reason?: 'demo' | 'error'; message?: string }> {
+  /** تلنگر (دلتنگی/بوسه/بغل) — گوشیِ نیمهٔ دیگر را با اعلانِ پرلرزش خبر می‌کند. */
+  async sendNudge(
+    type: 'miss' | 'kiss' | 'hug',
+  ): Promise<{ ok: boolean; reason?: 'demo' | 'error'; message?: string }> {
     if (DEMO_MODE) return { ok: false, reason: 'demo' };
     try {
-      await req('POST', '/api/nudge', {});
+      await req('POST', '/api/nudge', { type });
       return { ok: true };
     } catch (e: any) {
       return { ok: false, reason: 'error', message: e?.message };

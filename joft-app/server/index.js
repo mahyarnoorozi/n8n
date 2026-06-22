@@ -254,8 +254,15 @@ app.post('/api/love', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
-// ---------- تلنگرِ «به فکرتم» (لرزش روی گوشیِ نیمهٔ دیگر) ----------
+// ---------- تلنگرها (لرزش روی گوشیِ نیمهٔ دیگر): دلتنگی / بوسه / بغل ----------
+const NUDGE_MESSAGES = {
+  miss: { title: (n) => `${n} دلش برات تنگ شده 💭`, body: 'یه تلنگرِ دلتنگی برات فرستاد.' },
+  kiss: { title: (n) => `${n} برات یه بوسه فرستاد 😘`, body: 'یه بوسهٔ گرم برات اومد 🥰' },
+  hug: { title: (n) => `${n} برات یه بغلِ گرم فرستاد 🤗`, body: 'محکم بغلت کرد 🫂' },
+};
+
 app.post('/api/nudge', requireAuth, async (req, res) => {
+  const type = ['miss', 'kiss', 'hug'].includes(req.body?.type) ? req.body.type : 'miss';
   const partner = db.getPartner(req.user.id);
   if (!partner) {
     return res
@@ -263,11 +270,12 @@ app.post('/api/nudge', requireAuth, async (req, res) => {
       .json({ ok: false, error: 'no_partner', message: 'هنوز به نیمهٔ دیگرت وصل نیستی.' });
   }
   if (partner.pushToken) {
+    const m = NUDGE_MESSAGES[type];
     await sendPush(
       partner.pushToken,
-      `${req.user.name || 'نیمهٔ دیگرت'} به فکرته 💭`,
-      'یه تلنگرِ دلتنگی برات فرستاد.',
-      { type: 'nudge' },
+      m.title(req.user.name || 'نیمهٔ دیگرت'),
+      m.body,
+      { type: 'nudge', nudge: type },
       'nudge',
     );
   }
