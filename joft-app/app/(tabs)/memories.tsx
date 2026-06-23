@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -49,6 +50,7 @@ function groupByMonth(items: Memory[]): Group[] {
 
 export default function Memories() {
   const { user } = useAuth();
+  const router = useRouter();
   const [text, setText] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
@@ -105,7 +107,15 @@ export default function Memories() {
 
   return (
     <Screen>
-      <Txt variant="title">{fa.memoriesTitle}</Txt>
+      <View style={styles.titleRow}>
+        <Txt variant="title">{fa.memoriesTitle}</Txt>
+        <Pressable onPress={() => router.push('/memory-wall')} style={styles.wallBtn} hitSlop={8}>
+          <Ionicons name="grid-outline" size={16} color={colors.accent} />
+          <Txt variant="tiny" color={colors.accent}>
+            نمای دیوار
+          </Txt>
+        </Pressable>
+      </View>
       <Txt variant="body" color={colors.textMuted} style={{ marginTop: spacing.xs }}>
         دفترِ مشترکِ شما دو نفر — لحظه‌های قشنگ، عکس‌ها و کوچک‌ترین خاطره‌ها.
       </Txt>
@@ -270,6 +280,20 @@ function MemoriesEmpty({ onPickSeed }: { onPickSeed: (seed: string) => void }) {
 }
 
 const styles = StyleSheet.create({
+  titleRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  wallBtn: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: colors.accentTint,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+  },
   composerHint: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
