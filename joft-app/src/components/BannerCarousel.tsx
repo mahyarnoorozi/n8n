@@ -10,7 +10,17 @@ import {
   View,
 } from 'react-native';
 import { colors, radius, spacing, tones, type Tone } from '@/theme';
+import { GradientFill, GRADIENTS } from './Gradient';
 import { Txt } from './Txt';
+
+const TONE_GRADIENT: Record<Tone, readonly string[]> = {
+  rose: GRADIENTS.rose,
+  peach: GRADIENTS.peach,
+  lilac: GRADIENTS.lilac,
+  mint: GRADIENTS.mint,
+  gold: GRADIENTS.gold,
+  sky: GRADIENTS.sky,
+};
 
 export type Banner = {
   id: string;
@@ -57,8 +67,9 @@ export function BannerCarousel({ items }: { items: Banner[] }) {
             <Pressable
               key={b.id}
               onPress={b.onPress}
-              style={({ pressed }) => [styles.card, { backgroundColor: t.bg, width: CARD_W }, pressed && { opacity: 0.9 }]}
+              style={({ pressed }) => [styles.card, { width: CARD_W }, pressed && { opacity: 0.9 }]}
             >
+              <GradientFill colors={TONE_GRADIENT[b.tone]} radius={radius.lg} />
               <View style={{ flex: 1 }}>
                 <Txt variant="bodyBold" color={colors.ink}>
                   {b.title}
@@ -95,6 +106,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: spacing.md,
+    overflow: 'hidden',
   },
   iconBubble: {
     width: 52,

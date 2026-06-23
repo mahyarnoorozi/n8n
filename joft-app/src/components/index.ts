@@ -12,3 +12,4 @@ export { BottomSheet } from './BottomSheet';
 export { EmptyState } from './EmptyState';
 export { ToastProvider, useToast } from './Toast';
 export { BannerCarousel, type Banner } from './BannerCarousel';
+export { Gradient, GradientFill, GRADIENTS, type GradientKey } from './Gradient';

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Vibration, View } from 'react-native';
-import { Avatar, BannerCarousel, Card, IconChip, Screen, SectionHeader, Txt, useToast, type Banner } from '@/components';
+import { Avatar, BannerCarousel, Card, GradientFill, GRADIENTS, IconChip, Screen, SectionHeader, Txt, useToast, type Banner } from '@/components';
 import { api } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
 import { categories, dailyQuestions } from '@/data/content';
@@ -98,16 +98,21 @@ export default function Home() {
         </Pressable>
       </View>
 
-      {/* کارت رابطه — پاستلیِ نرم با حالِ عاشقانه */}
+      {/* کارت رابطه — گرادیانتِ نرمِ عاشقانه */}
       <Card style={styles.relCard} padded>
-        <View style={styles.relBlob} />
-        <View style={styles.relBlob2} />
+        <GradientFill colors={GRADIENTS.blush} radius={radius.lg} />
         <View style={styles.relAvatars}>
-          <Avatar name={user?.name} size={56} color={colors.ink} photoUri={user?.photo} faceless={user?.avatarKind} />
+          <Avatar
+            name={user?.name}
+            size={56}
+            photoUri={user?.photo}
+            faceless={user?.avatarKind}
+            gradient={GRADIENTS.avMe}
+          />
           <View style={styles.heartLink}>
             <Ionicons name="heart" size={20} color={colors.accent} />
           </View>
-          <Avatar name={user?.partnerName} size={56} color={colors.accent} />
+          <Avatar name={user?.partnerName} size={56} gradient={GRADIENTS.avPartner} />
         </View>
         <Txt variant="caption" center color={colors.textMuted} style={{ marginTop: spacing.md }}>
           {fa.togetherFor}
@@ -284,6 +289,7 @@ function NudgeCard({ partnerName }: { partnerName: string }) {
 
   return (
     <View style={styles.nudgeCard}>
+      <GradientFill colors={GRADIENTS.brand} radius={radius.lg} />
       <View style={styles.nudgeHead}>
         <Animated.View style={[styles.nudgeHeart, { transform: [{ scale: beat }] }]}>
           <Ionicons name="heart" size={22} color={colors.accent} />
@@ -364,6 +370,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginTop: spacing.lg,
     gap: spacing.md,
+    overflow: 'hidden',
   },
   nudgeHead: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.md },
   nudgeHeart: {
@@ -397,26 +404,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.blush,
     borderColor: colors.blush,
     overflow: 'hidden',
-  },
-  relBlob: {
-    position: 'absolute',
-    top: -34,
-    left: -30,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.accentWarm,
-    opacity: 0.18,
-  },
-  relBlob2: {
-    position: 'absolute',
-    bottom: -40,
-    right: -24,
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: colors.lilacSoft,
-    opacity: 0.7,
   },
   relAvatars: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.xs },
   heartLink: { paddingHorizontal: spacing.sm },
