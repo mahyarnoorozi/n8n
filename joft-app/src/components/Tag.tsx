@@ -1,19 +1,24 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { colors, radius, spacing } from '@/theme';
+import { colors, radius, spacing, tones, type Tone } from '@/theme';
 import { Txt } from './Txt';
 
 type Props = {
   label: string;
   bg?: string;
   color?: string;
+  /** تونِ پاستلیِ رنگی (rose/peach/...). در صورت تعیین، رنگ‌های نرم و گرم می‌گیرد. */
+  tone?: Tone;
 };
 
-/** برچسب کوچک برای دسته‌بندی، زمان مطالعه و... — به‌صورت پیش‌فرض خنثی و آرام. */
-export function Tag({ label, bg = colors.chip, color = colors.textMuted }: Props) {
+/** برچسب کوچک و نرم برای دسته‌بندی، زمان مطالعه و... — حالا با تونِ پاستلیِ رنگی. */
+export function Tag({ label, bg, color, tone }: Props) {
+  const t = tone ? tones[tone] : null;
+  const background = bg ?? (t ? t.bg : colors.chip);
+  const fg = color ?? (t ? t.fg : colors.textMuted);
   return (
-    <View style={[styles.tag, { backgroundColor: bg }]}>
-      <Txt variant="tiny" color={color}>
+    <View style={[styles.tag, { backgroundColor: background }]}>
+      <Txt variant="tiny" color={fg}>
         {label}
       </Txt>
     </View>

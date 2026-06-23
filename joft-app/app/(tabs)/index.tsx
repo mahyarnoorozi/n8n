@@ -9,7 +9,7 @@ import { categories, dailyQuestions } from '@/data/content';
 import { fa } from '@/i18n/fa';
 import { getOccasions, type Occasion } from '@/storage/local';
 import { getCycle } from '@/storage/cycle';
-import { colors, radius, spacing, type Tone } from '@/theme';
+import { colors, radius, spacing, tones, type Tone } from '@/theme';
 import { daysSince, jalaliDayMonth } from '@/utils/jalali';
 import { computeStatus, PHASE_META, type CycleStatus } from '@/utils/cycle';
 import { toFa } from '@/utils/persian';
@@ -98,8 +98,10 @@ export default function Home() {
         </Pressable>
       </View>
 
-      {/* کارت رابطه */}
+      {/* کارت رابطه — پاستلیِ نرم با حالِ عاشقانه */}
       <Card style={styles.relCard} padded>
+        <View style={styles.relBlob} />
+        <View style={styles.relBlob2} />
         <View style={styles.relAvatars}>
           <Avatar name={user?.name} size={56} color={colors.ink} photoUri={user?.photo} faceless={user?.avatarKind} />
           <View style={styles.heartLink}>
@@ -207,21 +209,26 @@ export default function Home() {
       {/* کاوش بر اساس موضوع — سلول‌های کاملاً یکدست */}
       <SectionHeader title={fa.exploreCats} />
       <View style={styles.catGrid}>
-        {categories.map((c) => (
-          <Pressable
-            key={c.id}
-            style={styles.catCard}
-            onPress={() => router.push('/(tabs)/questions')}
-          >
-            <IconChip icon={c.icon as any} size={42} tone={c.tone} />
-            <Txt variant="bodyBold" style={{ marginTop: spacing.md }}>
-              {c.title}
-            </Txt>
-            <Txt variant="tiny" color={colors.textMuted}>
-              {c.subtitle}
-            </Txt>
-          </Pressable>
-        ))}
+        {categories.map((c) => {
+          const t = tones[c.tone];
+          return (
+            <Pressable
+              key={c.id}
+              style={[styles.catCard, { backgroundColor: t.bg }]}
+              onPress={() => router.push('/(tabs)/questions')}
+            >
+              <View style={styles.catIcon}>
+                <Ionicons name={(c.icon as any).replace('-outline', '')} size={20} color={t.fg} />
+              </View>
+              <Txt variant="bodyBold" style={{ marginTop: spacing.md }}>
+                {c.title}
+              </Txt>
+              <Txt variant="tiny" color={colors.inkSoft}>
+                {c.subtitle}
+              </Txt>
+            </Pressable>
+          );
+        })}
       </View>
     </Screen>
   );
@@ -385,7 +392,32 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.lg,
   },
-  relCard: { alignItems: 'center' },
+  relCard: {
+    alignItems: 'center',
+    backgroundColor: colors.blush,
+    borderColor: colors.blush,
+    overflow: 'hidden',
+  },
+  relBlob: {
+    position: 'absolute',
+    top: -34,
+    left: -30,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.accentWarm,
+    opacity: 0.18,
+  },
+  relBlob2: {
+    position: 'absolute',
+    bottom: -40,
+    right: -24,
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: colors.lilacSoft,
+    opacity: 0.7,
+  },
   relAvatars: { flexDirection: 'row-reverse', alignItems: 'center', gap: spacing.xs },
   heartLink: { paddingHorizontal: spacing.sm },
   eventsRow: { gap: spacing.md, paddingVertical: spacing.xs, paddingLeft: spacing.xs },
@@ -401,10 +433,15 @@ const styles = StyleSheet.create({
   catGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: spacing.md },
   catCard: {
     width: '47.5%',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.hairline,
     borderRadius: radius.lg,
     padding: spacing.lg,
+  },
+  catIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

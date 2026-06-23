@@ -20,12 +20,18 @@ export const colors = {
   primary: '#1B1A29', // نام سازگار با کدِ قبلی؛ همان ink
 
   // خنثی‌ها — کمی گرم‌تر (ته‌مایهٔ صورتی) تا حس صمیمیت بدهد
-  bg: '#FBF6F7',
+  bg: '#FCF2F3', // پس‌زمینهٔ بلاشِ گرم و ملایم
   surface: '#FFFFFF',
-  surfaceAlt: '#FAF1F3',
+  surfaceAlt: '#FBEFF1',
   chip: '#FDEEF1', // پس‌زمینهٔ صورتیِ ملایمِ چیپ‌های آیکن
-  border: '#F0E6E9', // خط موییِ کارت‌ها
-  hairline: '#F0E6E9',
+  border: '#F3E4E8', // خط موییِ کارت‌ها
+  hairline: '#F3E4E8',
+
+  // سطوحِ پاستلیِ نرم — برای کارت‌های حسی/قهرمان (نه سفیدِ خشک)
+  blush: '#FCE7EC', // صورتیِ پودریِ گرم
+  cream: '#FFF3E9', // هلوییِ ملایم
+  lilacSoft: '#F1ECFB', // یاسیِ نرم
+  mintSoft: '#E7F6EF', // نعناییِ آرام
 
   // متن
   text: '#1B1A29',
